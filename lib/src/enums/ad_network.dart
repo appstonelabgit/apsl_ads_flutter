@@ -10,7 +10,7 @@ AdNetwork? getAdNetworkFromString(String providerName) {
   final placementName = providerName.toLowerCase();
 
   final AdNetwork provider = AdNetwork.values.firstWhere(
-    (element) => element.toString().toLowerCase() == placementName,
+    (element) => element.name.toLowerCase() == placementName.toLowerCase(),
     orElse: () => AdNetwork.any,
   );
 
