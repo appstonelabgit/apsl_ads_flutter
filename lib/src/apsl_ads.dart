@@ -4,6 +4,7 @@ import 'package:applovin_max/applovin_max.dart';
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 import 'package:apsl_ads_flutter/src/apsl_admob/apsl_admob_interstitial_ad.dart';
 import 'package:apsl_ads_flutter/src/apsl_admob/apsl_admob_rewarded_ad.dart';
+import 'package:apsl_ads_flutter/src/apsl_facebook/apsl_facebook_banner_ad.dart';
 import 'package:apsl_ads_flutter/src/apsl_facebook/apsl_facebook_full_screen_ad.dart';
 import 'package:apsl_ads_flutter/src/apsl_unity/apsl_unity_ad.dart';
 import 'package:apsl_ads_flutter/src/utils/apsl_event_controller.dart';
@@ -13,6 +14,7 @@ import 'package:apsl_ads_flutter/src/utils/extensions.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_audience_network/easy_audience_network.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 class ApslAds {
@@ -44,6 +46,10 @@ class ApslAds {
   /// On banner, ad badge will appear
   bool get showAdBadge => _showAdBadge;
   bool _showAdBadge = false;
+
+  int _interstitialAdIndex = 0;
+  int _rewardedAdIndex = 0;
+  int _appOpenAdIndex = 0;
 
   /// Initializes the Google Mobile Ads SDK.
   ///
@@ -148,48 +154,45 @@ class ApslAds {
   ApslAdBase? createBanner(
       {required AdNetwork adNetwork, AdSize adSize = AdSize.banner}) {
     ApslAdBase? ad;
+    final bannerId = adIdManager.getAppIds(adNetwork).bannerId;
 
-    // switch (adNetwork) {
-    //   case AdNetwork.admob:
-    //     final bannerId = adIdManager.admobAdIds?.bannerId;
-    //     assert(bannerId != null,
-    //         'You are trying to create a banner and Admob Banner id is null in ad id manager');
-    //     if (bannerId != null) {
-    //       ad = ApslAdmobBannerAd(bannerId,
-    //           adSize: adSize, adRequest: _adRequest);
-    //       _eventController.setupEvents(ad);
-    //     }
-    //     break;
-    //   case AdNetwork.unity:
-    //     final bannerId = adIdManager.unityAdIds?.bannerId;
-    //     assert(bannerId != null,
-    //         'You are trying to create a banner and Unity Banner id is null in ad id manager');
-    //     if (bannerId != null) {
-    //       ad = ApslUnityBannerAd(bannerId, adSize: adSize);
-    //       _eventController.setupEvents(ad);
-    //     }
-    //     break;
-    //   case AdNetwork.facebook:
-    //     final bannerId = adIdManager.fbAdIds?.bannerId;
-    //     assert(bannerId != null,
-    //         'You are trying to create a banner and Facebook Banner id is null in ad id manager');
-    //     if (bannerId != null) {
-    //       ad = ApslFacebookBannerAd(bannerId, adSize: adSize);
-    //       _eventController.setupEvents(ad);
-    //     }
-    //     break;
-    //   case AdNetwork.appLovin:
-    //     // final bannerId = adIdManager.appLovinAdIds?.bannerId;
-    //     // assert(bannerId != null,
-    //     //     'You are trying to create a banner and Applovin Banner id is null in ad id manager');
-    //     // if (bannerId != null) {
-    //     //   ad = EasyApplovinBannerAd(bannerId);
-    //     //   _eventController.setupEvents(ad);
-    //     // }
-    //     break;
-    //   default:
-    //     ad = null;
-    // }
+    switch (adNetwork) {
+      case AdNetwork.admob:
+        assert(bannerId != null,
+            'You are trying to create a banner and Admob Banner id is null in ad id manager');
+        if (bannerId != null) {
+          ad = ApslAdmobBannerAd(bannerId,
+              adSize: adSize, adRequest: _adRequest);
+          _eventController.setupEvents(ad);
+        }
+        break;
+      case AdNetwork.unity:
+        assert(bannerId != null,
+            'You are trying to create a banner and Unity Banner id is null in ad id manager');
+        if (bannerId != null) {
+          ad = ApslUnityBannerAd(bannerId, adSize: adSize);
+          _eventController.setupEvents(ad);
+        }
+        break;
+      case AdNetwork.facebook:
+        assert(bannerId != null,
+            'You are trying to create a banner and Facebook Banner id is null in ad id manager');
+        if (bannerId != null) {
+          ad = ApslFacebookBannerAd(bannerId, adSize: adSize);
+          _eventController.setupEvents(ad);
+        }
+        break;
+      case AdNetwork.appLovin:
+        // assert(bannerId != null,
+        //     'You are trying to create a banner and Applovin Banner id is null in ad id manager');
+        // if (bannerId != null) {
+        //   ad = ApslApplovinBannerAd(bannerId);
+        //   _eventController.setupEvents(ad);
+        // }
+        break;
+      default:
+        ad = null;
+    }
     return ad;
   }
 
@@ -202,6 +205,7 @@ class ApslAds {
     int appOpenAdOrientation = AppOpenAd.orientationPortrait,
   }) async {
     // init interstitial ads
+    ApslLogger().logInfo("InterstitialAdUnitId $interstitialAdUnitId");
     if (interstitialAdUnitId != null &&
         _interstitialAds.doesNotContain(
           AdNetwork.admob,
@@ -402,18 +406,30 @@ class ApslAds {
   /// [adUnitType] should be mentioned here, only interstitial or rewarded should be mentioned here
   /// if [adNetwork] is provided, only that network's ad would be displayed
   /// if [shouldShowLoader] before interstitial. If it's true, you have to provide build context.
-  bool showAd(AdUnitType adUnitType,
-      {AdNetwork adNetwork = AdNetwork.any,
-      bool shouldShowLoader = false,
-      int delayInSeconds = 2,
-      BuildContext? context}) {
+  bool showAd(
+    AdUnitType adUnitType, {
+    AdNetwork adNetwork = AdNetwork.any,
+    bool shouldShowLoader = false,
+    int delayInSeconds = 2,
+    BuildContext? context,
+  }) {
     List<ApslAdBase> ads = [];
-    if (adUnitType == AdUnitType.rewarded) {
-      ads = _rewardedAds;
-    } else if (adUnitType == AdUnitType.interstitial) {
-      ads = _interstitialAds;
-    } else if (adUnitType == AdUnitType.appOpen) {
-      ads = _appOpenAds;
+    int index = 0;
+    switch (adUnitType) {
+      case AdUnitType.rewarded:
+        index = _rewardedAdIndex;
+        ads = _rewardedAds;
+        break;
+      case AdUnitType.interstitial:
+        index = _interstitialAdIndex;
+        ads = _interstitialAds;
+        break;
+      case AdUnitType.appOpen:
+        index = _appOpenAdIndex;
+        ads = _appOpenAds;
+        break;
+      default:
+        break;
     }
 
     if (adNetwork != AdNetwork.any) {
@@ -436,26 +452,28 @@ class ApslAds {
       }
     }
 
-    for (final ad in ads) {
-      if (ad.isAdLoaded) {
-        if (adNetwork == AdNetwork.any || adNetwork == ad.adNetwork) {
-          if (ad.adUnitType == AdUnitType.interstitial &&
-              shouldShowLoader &&
-              context != null) {
-            showLoaderDialog(context, delay: delayInSeconds)
-                .then((_) => ad.show());
-          } else {
-            ad.show();
-          }
-          return true;
+    final ad = ads[index];
+
+    if (ad.isAdLoaded) {
+      if (adNetwork == AdNetwork.any || adNetwork == ad.adNetwork) {
+        if (ad.adUnitType == AdUnitType.interstitial &&
+            shouldShowLoader &&
+            context != null) {
+          showLoaderDialog(context, delay: delayInSeconds)
+              .then((_) => ad.show());
+        } else {
+          ad.show();
         }
-      } else {
-        _logger.logInfo(
-            '${ad.adNetwork} ${ad.adUnitType} was not loaded, so called loading');
-        ad.load();
+        updateAdIndex(adUnitType);
+        return true;
       }
+    } else {
+      _logger.logInfo(
+          '${ad.adNetwork} ${ad.adUnitType} was not loaded, so called loading');
+      ad.load();
     }
 
+    updateAdIndex(adUnitType);
     return false;
   }
 
@@ -535,6 +553,33 @@ class ApslAds {
           (adUnitType == null || adUnitType == e.adUnitType)) {
         e.dispose();
       }
+    }
+  }
+
+  /// Update add index count after showing ad
+  /// This method is called automatically after showing ad
+  void updateAdIndex(AdUnitType adUnitType) {
+    switch (adUnitType) {
+      case AdUnitType.rewarded:
+        _rewardedAdIndex++;
+        if (_rewardedAdIndex >= _rewardedAds.length) {
+          _rewardedAdIndex = 0;
+        }
+        break;
+      case AdUnitType.interstitial:
+        _interstitialAdIndex++;
+        if (_interstitialAdIndex >= _interstitialAds.length) {
+          _interstitialAdIndex = 0;
+        }
+        break;
+      case AdUnitType.appOpen:
+        _appOpenAdIndex++;
+        if (_appOpenAdIndex >= _appOpenAds.length) {
+          _appOpenAdIndex = 0;
+        }
+        break;
+      default:
+        break;
     }
   }
 }

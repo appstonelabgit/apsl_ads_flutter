@@ -37,21 +37,22 @@ class ApslAdmobInterstitialAd extends ApslAdBase {
     if (_isAdLoaded) return;
 
     await InterstitialAd.load(
-        adUnitId: adUnitId,
-        request: _adRequest,
-        adLoadCallback: InterstitialAdLoadCallback(
-          onAdLoaded: (InterstitialAd ad) {
-            _interstitialAd = ad;
-            _isAdLoaded = true;
-            onAdLoaded?.call(adNetwork, adUnitType, ad);
-          },
-          onAdFailedToLoad: (LoadAdError error) {
-            _interstitialAd = null;
-            _isAdLoaded = false;
-            onAdFailedToLoad?.call(
-                adNetwork, adUnitType, error, error.toString());
-          },
-        ));
+      adUnitId: adUnitId,
+      request: _adRequest,
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (InterstitialAd ad) {
+          _interstitialAd = ad;
+          _isAdLoaded = true;
+          onAdLoaded?.call(adNetwork, adUnitType, ad);
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          _interstitialAd = null;
+          _isAdLoaded = false;
+          onAdFailedToLoad?.call(
+              adNetwork, adUnitType, error, error.toString());
+        },
+      ),
+    );
   }
 
   @override

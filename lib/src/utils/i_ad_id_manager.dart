@@ -1,7 +1,12 @@
+import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
+
 abstract class IAdIdManager {
   const IAdIdManager();
 
   List<AppAdIds> get appAdIds;
+
+  AppAdIds getAppIds(AdNetwork adNetwork) =>
+      appAdIds.firstWhere((element) => element.adNetwork == adNetwork.name);
 }
 
 class AppAdIds {
