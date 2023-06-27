@@ -5,7 +5,7 @@ import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-const IAdIdManager adIdManager = TestAdIdManager();
+const AdsIdManager adIdManager = TestAdsIdManager();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
               networkName: 'Show Rewarded one by one',
               onTap: () => _showAvailableAd(AdUnitType.rewarded),
             ),
-            const ApslSmartBannerAd(
+            const ApslAllBannerAd(
               priorityAdNetworks: [
                 AdNetwork.facebook,
                 AdNetwork.admob,

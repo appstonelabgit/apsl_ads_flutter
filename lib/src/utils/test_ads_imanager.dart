@@ -1,24 +1,12 @@
 import 'dart:io';
 
-import 'i_ad_id_manager.dart';
+import 'ads_id_manager.dart';
 
-class TestAdIdManager extends IAdIdManager {
-  const TestAdIdManager();
+class TestAdsIdManager extends AdsIdManager {
+  const TestAdsIdManager();
 
   @override
   List<AppAdIds> get appAdIds => [
-        AppAdIds(
-          adNetwork: 'admob',
-          appId: Platform.isAndroid
-              ? 'ca-app-pub-3940256099942544~3347511713'
-              : 'ca-app-pub-3940256099942544~1458002511',
-          appOpenId: Platform.isAndroid
-              ? 'ca-app-pub-3940256099942544/3419835294'
-              : 'ca-app-pub-3940256099942544/5662855259',
-          bannerId: 'ca-app-pub-3940256099942544/6300978111',
-          interstitialId: 'ca-app-pub-3940256099942544/1033173712',
-          rewardedId: 'ca-app-pub-3940256099942544/5224354917',
-        ),
         AppAdIds(
           adNetwork: 'admob',
           appId: Platform.isAndroid

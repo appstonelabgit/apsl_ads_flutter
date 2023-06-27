@@ -23,7 +23,7 @@ class ApslAds {
 
   /// Google admob's ad request
   AdRequest _adRequest = const AdRequest();
-  late final IAdIdManager adIdManager;
+  late final AdsIdManager adIdManager;
   late AppLifecycleReactor _appLifecycleReactor;
 
   final _eventController = ApslEventController();
@@ -57,7 +57,7 @@ class ApslAds {
   /// [adMobAdRequest] will be used in all the admob requests. By default empty request will be used if nothing passed here.
   /// [fbTestingId] can be obtained by running the app once without the testingId.
   Future<void> initialize(
-    IAdIdManager manager, {
+    AdsIdManager manager, {
     bool unityTestMode = false,
     bool fbTestMode = false,
     bool isShowAppOpenOnAppStateChange = false,
@@ -360,9 +360,10 @@ class ApslAds {
     String? rewardedPlacementId,
   }) async {
     final status = await EasyAudienceNetwork.init(
-        testingId: testingId,
-        testMode: testMode,
-        iOSAdvertiserTrackingEnabled: iOSAdvertiserTrackingEnabled);
+      testingId: testingId,
+      testMode: testMode,
+      iOSAdvertiserTrackingEnabled: iOSAdvertiserTrackingEnabled,
+    );
 
     _eventController.fireNetworkInitializedEvent(
         AdNetwork.facebook, status ?? false);

@@ -1,7 +1,7 @@
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 
-abstract class IAdIdManager {
-  const IAdIdManager();
+abstract class AdsIdManager {
+  const AdsIdManager();
 
   List<AppAdIds> get appAdIds;
 

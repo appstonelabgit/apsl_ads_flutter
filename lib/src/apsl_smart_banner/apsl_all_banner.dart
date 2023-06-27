@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 import 'package:flutter/material.dart';
 
-class ApslSmartBannerAd extends StatefulWidget {
+class ApslAllBannerAd extends StatefulWidget {
   final List<AdNetwork> priorityAdNetworks;
   final AdSize adSize;
-  const ApslSmartBannerAd(
+  const ApslAllBannerAd(
       {Key? key,
       this.priorityAdNetworks = const [
         AdNetwork.admob,
@@ -17,10 +17,10 @@ class ApslSmartBannerAd extends StatefulWidget {
       : super(key: key);
 
   @override
-  State<ApslSmartBannerAd> createState() => _ApslSmartBannerAdState();
+  State<ApslAllBannerAd> createState() => _ApslAllBannerAdState();
 }
 
-class _ApslSmartBannerAdState extends State<ApslSmartBannerAd> {
+class _ApslAllBannerAdState extends State<ApslAllBannerAd> {
   int _currentADNetworkIndex = 0;
   StreamSubscription? _streamSubscription;
 
@@ -34,7 +34,8 @@ class _ApslSmartBannerAdState extends State<ApslSmartBannerAd> {
   Widget build(BuildContext context) {
     final length = widget.priorityAdNetworks.length;
     if (_currentADNetworkIndex >= length) {
-      return const SizedBox();
+      // return const SizedBox();
+      _currentADNetworkIndex = 0;
     }
 
     while (_currentADNetworkIndex < length) {
@@ -75,23 +76,6 @@ class _ApslSmartBannerAdState extends State<ApslSmartBannerAd> {
           adIds.bannerId != null &&
           adIds.bannerId!.isNotEmpty,
     );
-
-    // adIdManager.appAdIds.
-    // if (adNetwork == AdNetwork.admob &&
-    //     adIdManager.admobAdIds?.bannerId != null) {
-    //   return true;
-    // } else if (adNetwork == AdNetwork.facebook &&
-    //     adIdManager.fbAdIds?.bannerId != null) {
-    //   return true;
-    // } else if (adNetwork == AdNetwork.appLovin &&
-    //     adIdManager.appLovinAdIds?.bannerId != null) {
-    //   return true;
-    // } else if (adNetwork == AdNetwork.unity &&
-    //     adIdManager.unityAdIds?.bannerId != null) {
-    //   return true;
-    // } else {
-    //   return false;
-    // }
   }
 
   Widget _showBannerAd(AdNetwork priorityAdNetwork) {
