@@ -2,7 +2,7 @@ import 'package:apsl_ads_flutter/src/enums/apsl_event_type.dart';
 import 'package:apsl_ads_flutter/src/enums/ad_network.dart';
 import 'package:apsl_ads_flutter/src/enums/ad_unit_type.dart';
 
-/// [AdEvent] is used to pass data inside event streams in easy ads instance
+/// [AdEvent] is used to pass data inside event streams in apsl ads instance
 /// You can use this to distinguish between different event types and each event type has a data attached to it.
 class AdEvent {
   final AdEventType type;

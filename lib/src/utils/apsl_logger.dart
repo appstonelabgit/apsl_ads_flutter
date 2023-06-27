@@ -5,7 +5,7 @@ import 'package:logger/logger.dart';
 
 /// [ApslLogger] is used to listen to the callbacks in stream & show logs
 class ApslLogger {
-  /// [Logger] is used to show logs in console for EasyAds
+  /// [Logger] is used to show logs in console for ApslAds
   final _logger = Logger();
   StreamSubscription? streamSubscription;
 
