@@ -28,7 +28,7 @@ abstract class ApslAdBase {
   ApslAdEarnedReward? onEarnedReward;
 }
 
-typedef EasyAdNetworkInitialized = void Function(
+typedef ApslAdNetworkInitialized = void Function(
     AdNetwork adNetwork, bool isInitialized, Object? data);
 typedef ApslAdFailedCallback = void Function(AdNetwork adNetwork,
     AdUnitType adUnitType, Object? data, String errorMessage);

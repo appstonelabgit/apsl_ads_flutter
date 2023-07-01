@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:applovin_max/applovin_max.dart';
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 import 'package:apsl_ads_flutter/src/apsl_admob/apsl_admob_interstitial_ad.dart';
 import 'package:apsl_ads_flutter/src/apsl_admob/apsl_admob_rewarded_ad.dart';
@@ -66,7 +65,6 @@ class ApslAds {
     RequestConfiguration? admobConfiguration,
     bool enableLogger = true,
     String? fbTestingId,
-    bool isAgeRestrictedUserForApplovin = false,
     bool fbiOSAdvertiserTrackingEnabled = false,
     int appOpenAdOrientation = AppOpenAd.orientationPortrait,
     bool showAdBadge = false,
@@ -105,17 +103,6 @@ class ApslAds {
               rewardedAdUnitId: appAdId.rewardedId,
               appOpenAdOrientation: appOpenAdOrientation,
               isShowAppOpenOnAppStateChange: isShowAppOpenOnAppStateChange,
-            );
-          }
-          break;
-        case AdNetwork.appLovin:
-          if (appAdId.appId.isNotEmpty) {
-            ApslAds.instance._initAppLovin(
-              sdkKey: appAdId.appId,
-              keywords: adMobAdRequest?.keywords,
-              isAgeRestrictedUser: isAgeRestrictedUserForApplovin,
-              interstitialAdUnitId: appAdId.interstitialId,
-              rewardedAdUnitId: appAdId.rewardedId,
             );
           }
           break;
@@ -183,14 +170,6 @@ class ApslAds {
           _eventController.setupEvents(ad);
         }
         break;
-      case AdNetwork.appLovin:
-        // assert(bannerId != null,
-        //     'You are trying to create a banner and Applovin Banner id is null in ad id manager');
-        // if (bannerId != null) {
-        //   ad = ApslApplovinBannerAd(bannerId);
-        //   _eventController.setupEvents(ad);
-        // }
-        break;
       default:
         ad = null;
     }
@@ -230,13 +209,6 @@ class ApslAds {
         if (nativeId != null) {
           // ad = ApslFacebookNativeAd();
         }
-        break;
-      case AdNetwork.appLovin:
-        // assert(nativeId != null,
-        //     'You are trying to create a native ad and Applovin Native id is null in ad id manager');
-        // if (nativeId != null) {
-        //   ad = ApslApplovinNativeAd();
-        // }
         break;
       default:
         ad = null;
@@ -300,54 +272,6 @@ class ApslAds {
       _appOpenAds.add(appOpenAdManager);
       _eventController.setupEvents(appOpenAdManager);
     }
-  }
-
-  Future<void> _initAppLovin({
-    required String sdkKey,
-    bool? isAgeRestrictedUser,
-    String? interstitialAdUnitId,
-    String? rewardedAdUnitId,
-    List<String>? keywords,
-  }) async {
-    final response = await AppLovinMAX.initialize(sdkKey);
-
-    AppLovinMAX.targetingData.maximumAdContentRating =
-        isAgeRestrictedUser == true
-            ? AdContentRating.allAudiences
-            : AdContentRating.none;
-
-    if (keywords != null) {
-      AppLovinMAX.targetingData.keywords = keywords;
-    }
-
-    if (response != null) {
-      _eventController.fireNetworkInitializedEvent(AdNetwork.appLovin, true);
-    } else {
-      _eventController.fireNetworkInitializedEvent(AdNetwork.appLovin, false);
-    }
-
-    // init interstitial ads
-    /*
-    if (interstitialAdUnitId != null &&
-        _interstitialAds.doesNotContain(
-            AdNetwork.appLovin, AdUnitType.interstitial)) {
-      final ad = EasyApplovinInterstitialAd(interstitialAdUnitId);
-      _interstitialAds.add(ad);
-      _eventController.setupEvents(ad);
-
-      await ad.load();
-    }
-
-    // init rewarded ads
-    if (rewardedAdUnitId != null &&
-        _rewardedAds.doesNotContain(AdNetwork.appLovin, AdUnitType.rewarded)) {
-      final ad = EasyApplovinRewardedAd(rewardedAdUnitId);
-      _rewardedAds.add(ad);
-      _eventController.setupEvents(ad);
-
-      await ad.load();
-    }
-    */
   }
 
   /// * [unityGameId] - identifier from Project Settings in Unity Dashboard.

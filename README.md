@@ -6,10 +6,9 @@ To easily integrate ads from different ad networks into your flutter app.
 
 ## Features
 
-- Google Mobile Ads (banner, appOpen, interstitial, rewarded ad)
-- Facebook Audience Network (banner, interstitial, rewarded ad)
+- Google Mobile Ads (banner, appOpen, interstitial, rewarded ad, native ad)
+- Facebook Audience Network (banner, interstitial, rewarded ad, native ad (coming soon))
 - Unity Ads (banner, interstitial, rewarded ad)
-- AppLovin Max Ads (banner, interstitial, rewarded ad)
 
 ## Admob Mediation
 - This plugin supports admob mediation [See Details](https://developers.google.com/admob/flutter/mediation/get-started) to see Admob Mediation Guide.
@@ -21,13 +20,11 @@ To easily integrate ads from different ad networks into your flutter app.
 
 #### Update your Info.plist
 
-* The keys for AppLovin and Google Ads **are required** in Info.plist.
+* The key for Google Ads **are required** in Info.plist.
 
 Update your app's `ios/Runner/Info.plist` file to add two keys:
 
 ```xml
-<key>AppLovinSdkKey</key>
-<string>YOUR_SDK_KEY</string>
 <key>GADApplicationIdentifier</key>
 <string>YOUR_SDK_KEY</string>
 ```
@@ -41,8 +38,6 @@ Update your app's `ios/Runner/Info.plist` file to add two keys:
 ```xml
 <manifest>
     <application>
-        <meta-data android:name="applovin.sdk.key"
-            android:value="YOUR_SDK_KEY"/>
         <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
@@ -85,17 +80,6 @@ class TestAdIdManager extends IAdIdManager {
   );
 
   @override
-  AppAdIds? get appLovinAdIds => AppAdIds(
-    appId:
-    'OeKTS4Zl758OIlAs3KQ6-3WE1IkdOo3nQNJtRubTzlyFU76TRWeQZAeaSMCr9GcZdxR4p2cnoZ1Gg7p7eSXCdA',
-    bannerId: Platform.isAndroid ? 'b2c4f43d3986bcfb' : '80c269494c0e45c2',
-    interstitialId:
-    Platform.isAndroid ? 'c48f54c6ce5ff297' : 'e33147110a6d12d2',
-    rewardedId:
-    Platform.isAndroid ? 'ffbed216d19efb09' : 'f4af3e10dd48ee4f',
-  );
-
-  @override
   AppAdIds? get fbAdIds => AppAdIds(
     appId: 'YOUR_APP_ID',
     interstitialId: 'VID_HD_16_9_15S_LINK#YOUR_PLACEMENT_ID',
@@ -118,14 +102,9 @@ const IAdIdManager adIdManager = TestAdIdManager();
 ApslAds.instance.initialize(
     adIdManager,
     adMobAdRequest: const AdRequest(),
-    // Set true if you want to show age restricted (age below 16 years) ads for applovin 
-    isAgeRestrictedUserForApplovin: true,
     // To enable Facebook Test mode ads
     fbTestMode: true,
-    admobConfiguration: RequestConfiguration(testDeviceIds: [
-      '072D2F3992EF5B4493042ADC632CE39F', // Mi Phone
-      '00008030-00163022226A802E',
-    ]),
+    admobConfiguration: RequestConfiguration(testDeviceIds: []),
   );
 ```
 
@@ -178,7 +157,7 @@ Widget build(BuildContext context) {
 Smart Banner will check one by one the priority ad networks provided by you, if any of the priority network failed to load by some reason then it will automatically jump and try to load the next one so we can prevent revenue loss. 
 
 If you want to set the priority for Smart Banner, just pass the priorityAdNetworks in ApslSmartBannerAd constructor just like below.
-Other wise it will set by default as [admob, facebook, appLovin, unity] and default AdSize is AdSize.banner,
+Other wise it will set by default as [admob, facebook, unity] and default AdSize is AdSize.banner,
 
 This is how you may show banner ad in widget-tree somewhere:
 
@@ -195,7 +174,6 @@ Widget build(BuildContext context) {
           AdNetwork.facebook,
           AdNetwork.admob,
           AdNetwork.unity,
-          AdNetwork.appLovin,
         ],
         adSize: AdSize.largeBanner,
       ),
