@@ -24,6 +24,7 @@ abstract class ApslAdBase {
   ApslAdFailedCallback? onAdFailedToShow;
   ApslAdCallback? onAdDismissed;
   ApslAdCallback? onBannerAdReadyForSetState;
+  ApslAdCallback? onNativeAdReadyForSetState;
   ApslAdEarnedReward? onEarnedReward;
 }
 

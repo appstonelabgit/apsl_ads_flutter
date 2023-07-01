@@ -14,8 +14,9 @@ import 'package:apsl_ads_flutter/src/utils/extensions.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_audience_network/easy_audience_network.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:unity_ads_plugin/unity_ads_plugin.dart';
+
+import 'apsl_admob/apsl_admob_native_ad.dart';
 
 class ApslAds {
   ApslAds._apslAds();
@@ -31,13 +32,13 @@ class ApslAds {
 
   List<ApslAdBase> get _allAds => [..._interstitialAds, ..._rewardedAds];
 
-  /// All the interstitial ads will be stored in it
+  /// All the App Open Ads ads will be stored in it
   final List<ApslAdBase> _appOpenAds = [];
 
-  /// All the interstitial ads will be stored in it
+  /// All the Interstitial ads will be stored in it
   final List<ApslAdBase> _interstitialAds = [];
 
-  /// All the rewarded ads will be stored in it
+  /// All the Rewarded ads will be stored in it
   final List<ApslAdBase> _rewardedAds = [];
 
   /// [_logger] is used to show Ad logs in the console
@@ -188,6 +189,53 @@ class ApslAds {
         // if (bannerId != null) {
         //   ad = ApslApplovinBannerAd(bannerId);
         //   _eventController.setupEvents(ad);
+        // }
+        break;
+      default:
+        ad = null;
+    }
+    return ad;
+  }
+
+  ApslAdBase? createNative({
+    required AdNetwork adNetwork,
+    NativeTemplateStyle? nativeTemplateStyle,
+    TemplateType? templateType,
+  }) {
+    ApslAdBase? ad;
+    final nativeId = adIdManager.getAppIds(adNetwork).nativeId;
+
+    switch (adNetwork) {
+      case AdNetwork.admob:
+        assert(nativeId != null,
+            'You are trying to create a native ad and Admob Native id is null in ad id manager');
+        if (nativeId != null) {
+          ad = ApslAdmobNativeAd(
+            nativeId,
+            nativeTemplateStyle: nativeTemplateStyle,
+            templateType: templateType,
+          );
+        }
+        break;
+      case AdNetwork.unity:
+        // assert(nativeId != null,
+        //     'You are trying to create a native ad and Unity Native id is null in ad id manager');
+        if (nativeId != null) {
+          // ad = ApslUnityNativeAd();
+        }
+        break;
+      case AdNetwork.facebook:
+        // assert(nativeId != null,
+        //     'You are trying to create a native ad and Facebook Native id is null in ad id manager');
+        if (nativeId != null) {
+          // ad = ApslFacebookNativeAd();
+        }
+        break;
+      case AdNetwork.appLovin:
+        // assert(nativeId != null,
+        //     'You are trying to create a native ad and Applovin Native id is null in ad id manager');
+        // if (nativeId != null) {
+        //   ad = ApslApplovinNativeAd();
         // }
         break;
       default:

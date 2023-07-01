@@ -63,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
               networkName: 'Admob AppOpen',
               onTap: () => _showAd(AdNetwork.admob, AdUnitType.appOpen),
             ),
+            const ApslSequenceNativeAd(templateType: TemplateType.small),
             const Divider(thickness: 2),
             _sectionTitleWidget(context, title: 'Interstitial'),
             AdListTile(
@@ -107,11 +108,11 @@ class _HomeScreenState extends State<HomeScreen> {
               networkName: 'Show Rewarded one by one',
               onTap: () => _showAvailableAd(AdUnitType.rewarded),
             ),
-            const ApslAllBannerAd(
+            const ApslSequenceBannerAd(
               priorityAdNetworks: [
-                AdNetwork.facebook,
-                AdNetwork.admob,
                 AdNetwork.unity,
+                AdNetwork.admob,
+                AdNetwork.facebook,
                 AdNetwork.appLovin,
               ],
             ),

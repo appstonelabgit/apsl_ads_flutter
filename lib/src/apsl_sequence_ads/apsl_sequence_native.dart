@@ -3,24 +3,25 @@ import 'dart:async';
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 import 'package:flutter/material.dart';
 
-class ApslAllBannerAd extends StatefulWidget {
+class ApslSequenceNativeAd extends StatefulWidget {
   final List<AdNetwork> priorityAdNetworks;
-  final AdSize adSize;
-  const ApslAllBannerAd(
-      {Key? key,
-      this.priorityAdNetworks = const [
-        AdNetwork.admob,
-        AdNetwork.facebook,
-        AdNetwork.unity,
-      ],
-      this.adSize = AdSize.banner})
-      : super(key: key);
+  final NativeTemplateStyle? nativeTemplateStyle;
+  final TemplateType? templateType;
+  const ApslSequenceNativeAd({
+    Key? key,
+    this.nativeTemplateStyle,
+    this.templateType,
+    this.priorityAdNetworks = const [
+      AdNetwork.admob,
+      AdNetwork.facebook,
+    ],
+  }) : super(key: key);
 
   @override
-  State<ApslAllBannerAd> createState() => _ApslAllBannerAdState();
+  State<ApslSequenceNativeAd> createState() => _ApslSequenceNativeAdState();
 }
 
-class _ApslAllBannerAdState extends State<ApslAllBannerAd> {
+class _ApslSequenceNativeAdState extends State<ApslSequenceNativeAd> {
   int _currentADNetworkIndex = 0;
   StreamSubscription? _streamSubscription;
 
@@ -39,9 +40,9 @@ class _ApslAllBannerAdState extends State<ApslAllBannerAd> {
     }
 
     while (_currentADNetworkIndex < length) {
-      if (_isBannerIdAvailable(
+      if (_isNativeIdAvailable(
           widget.priorityAdNetworks[_currentADNetworkIndex])) {
-        return _showBannerAd(widget.priorityAdNetworks[_currentADNetworkIndex]);
+        return _showNativeAd(widget.priorityAdNetworks[_currentADNetworkIndex]);
       }
 
       _currentADNetworkIndex++;
@@ -53,14 +54,14 @@ class _ApslAllBannerAdState extends State<ApslAllBannerAd> {
     _cancelStream();
     _streamSubscription = ApslAds.instance.onEvent.listen((event) {
       if (event.adNetwork == priorityAdNetwork &&
-          event.adUnitType == AdUnitType.banner &&
+          event.adUnitType == AdUnitType.native &&
           (event.type == AdEventType.adFailedToLoad ||
               event.type == AdEventType.adFailedToShow)) {
         _cancelStream();
         _currentADNetworkIndex++;
         setState(() {});
       } else if (event.adNetwork == priorityAdNetwork &&
-          event.adUnitType == AdUnitType.banner &&
+          event.adUnitType == AdUnitType.native &&
           (event.type == AdEventType.adShowed ||
               event.type == AdEventType.adLoaded)) {
         _cancelStream();
@@ -68,19 +69,23 @@ class _ApslAllBannerAdState extends State<ApslAllBannerAd> {
     });
   }
 
-  bool _isBannerIdAvailable(AdNetwork adNetwork) {
+  bool _isNativeIdAvailable(AdNetwork adNetwork) {
     final adIdManager = ApslAds.instance.adIdManager;
     return adIdManager.appAdIds.any(
       (adIds) =>
           adIds.adNetwork == adNetwork.name &&
-          adIds.bannerId != null &&
-          adIds.bannerId!.isNotEmpty,
+          adIds.nativeId != null &&
+          adIds.nativeId!.isNotEmpty,
     );
   }
 
-  Widget _showBannerAd(AdNetwork priorityAdNetwork) {
+  Widget _showNativeAd(AdNetwork priorityAdNetwork) {
     _subscribeToAdEvent(priorityAdNetwork);
-    return ApslBannerAd(adNetwork: priorityAdNetwork, adSize: widget.adSize);
+    return ApslNativeAd(
+      adNetwork: priorityAdNetwork,
+      nativeTemplateStyle: widget.nativeTemplateStyle,
+      templateType: widget.templateType,
+    );
   }
 
   void _cancelStream() {

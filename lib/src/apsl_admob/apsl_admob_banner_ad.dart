@@ -60,13 +60,13 @@ class ApslAdmobBannerAd extends ApslAdBase {
         onAdImpression: (Ad ad) => onAdShowed?.call(adNetwork, adUnitType, ad),
       ),
       request: _adRequest,
-    );
-    _bannerAd?.load();
+    )..load();
+    // _bannerAd?.load();
   }
 
   @override
   dynamic show() {
-    if (_bannerAd == null || _isAdLoaded == false) {
+    if (_bannerAd == null || !_isAdLoaded) {
       load();
       return SizedBox(
         height: adSize.height.toDouble(),
