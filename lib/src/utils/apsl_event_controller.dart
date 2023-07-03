@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 
-/// Easy Event controller manages events received from all type of ad units
 class ApslEventController {
   Stream<AdEvent> get onEvent => _onEventController.stream;
   final _onEventController = StreamController<AdEvent>.broadcast();

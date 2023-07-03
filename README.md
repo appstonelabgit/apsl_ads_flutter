@@ -1,8 +1,8 @@
 # Apsl Ads Flutter
 
-**Show some 💙, 👍 the package & ⭐️ the repo to support the project**
+**Please show some ❤️ to the package, give it a 👍, and ⭐️ the repo to support the project!**
 
-To easily integrate ads from different ad networks into your flutter app.
+Simplify the integration of ads from various ad networks into your Flutter app effortlessly.
 
 ## Features
 
@@ -11,8 +11,8 @@ To easily integrate ads from different ad networks into your flutter app.
 - Unity Ads (banner, interstitial, rewarded ad)
 
 ## Admob Mediation
-- This plugin supports admob mediation [See Details](https://developers.google.com/admob/flutter/mediation/get-started) to see Admob Mediation Guide.
-- You just need to add the naative plaatform setting for admob mediation.
+- This plugin offers support for AdMob mediation. [See Details](https://developers.google.com/admob/flutter/mediation/get-started) for the AdMob Mediation Guide.
+- Simply add the native platform settings for AdMob mediation.
 
 ## Platform Specific Setup
 
@@ -51,47 +51,59 @@ Update your app's `ios/Runner/Info.plist` file to add two keys:
 ```dart
 import 'dart:io';
 
-import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'ads_id_manager.dart';
 
-class TestAdIdManager extends IAdIdManager {
-  const TestAdIdManager();
-
-  @override
-  AppAdIds? get admobAdIds => AppAdIds(
-    appId: Platform.isAndroid
-        ? 'ca-app-pub-3940256099942544~3347511713'
-        : 'ca-app-pub-3940256099942544~1458002511',
-    appOpenId: Platform.isAndroid
-        ? 'ca-app-pub-3940256099942544/3419835294'
-        : 'ca-app-pub-3940256099942544/5662855259',
-    bannerId: 'ca-app-pub-3940256099942544/6300978111',
-    interstitialId: 'ca-app-pub-3940256099942544/1033173712',
-    rewardedId: 'ca-app-pub-3940256099942544/5224354917',
-  );
+class TestAdsIdManager extends AdsIdManager {
+  const TestAdsIdManager();
 
   @override
-  AppAdIds? get unityAdIds => AppAdIds(
-    appId: Platform.isAndroid ? '4374881' : '4374880',
-    bannerId: Platform.isAndroid ? 'Banner_Android' : 'Banner_iOS',
-    interstitialId:
-    Platform.isAndroid ? 'Interstitial_Android' : 'Interstitial_iOS',
-    rewardedId: Platform.isAndroid ? 'Rewarded_Android' : 'Rewarded_iOS',
-  );
-
-  @override
-  AppAdIds? get fbAdIds => AppAdIds(
-    appId: 'YOUR_APP_ID',
-    interstitialId: 'VID_HD_16_9_15S_LINK#YOUR_PLACEMENT_ID',
-    bannerId: 'IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID',
-    rewardedId: 'VID_HD_16_9_46S_APP_INSTALL#YOUR_PLACEMENT_ID',
-  );
+  List<AppAdIds> get appAdIds => [
+        AppAdIds(
+          adNetwork: 'admob',
+          appId: Platform.isAndroid
+              ? 'ca-app-pub-3940256099942544~3347511713'
+              : 'ca-app-pub-3940256099942544~1458002511',
+          appOpenId: Platform.isAndroid
+              ? 'ca-app-pub-3940256099942544/3419835294'
+              : 'ca-app-pub-3940256099942544/5662855259',
+          bannerId: Platform.isAndroid
+              ? 'ca-app-pub-3940256099942544/6300978111'
+              : 'ca-app-pub-3940256099942544/2934735716',
+          interstitialId: Platform.isAndroid
+              ? 'ca-app-pub-3940256099942544/1033173712'
+              : 'ca-app-pub-3940256099942544/4411468910',
+          rewardedId: Platform.isAndroid
+              ? 'ca-app-pub-3940256099942544/5224354917'
+              : 'ca-app-pub-3940256099942544/1712485313',
+          nativeId: Platform.isAndroid
+              ? 'ca-app-pub-3940256099942544/2247696110'
+              : 'ca-app-pub-3940256099942544/3986624511',
+        ),
+        AppAdIds(
+          adNetwork: 'unity',
+          appId: Platform.isAndroid ? '4374881' : '4374880',
+          bannerId: Platform.isAndroid ? 'Banner_Android' : 'Banner_iOS',
+          interstitialId:
+              Platform.isAndroid ? 'Interstitial_Android' : 'Interstitial_iOS',
+          rewardedId: Platform.isAndroid ? 'Rewarded_Android' : 'Rewarded_iOS',
+        ),
+        const AppAdIds(
+          adNetwork: 'facebook',
+          appId: '1579706379118402',
+          interstitialId: 'VID_HD_16_9_15S_LINK#YOUR_PLACEMENT_ID',
+          bannerId: 'IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID',
+          rewardedId: 'VID_HD_16_9_46S_APP_INSTALL#YOUR_PLACEMENT_ID',
+        ),
+      ];
 }
+
 ```
 
 ## Initialize the SDK
 
 Before loading ads, have your app initialize the Mobile Ads SDK by calling `ApslAds.instance.initialize()` which initializes the SDK and returns a `Future` that finishes once initialization is complete (or after a 30-second timeout). This needs to be done only once, ideally right before running the app.
+
+Before you start showing ads in your app, make sure to initialize the Mobile Ads SDK by calling `ApslAds.instance.initialize()`. This will initialize the SDK and return a `Future` that completes when the initialization is done (or after a 30-second timeout). You only need to do this once, preferably right before running your app.
 
 ```dart
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
@@ -112,8 +124,8 @@ ApslAds.instance.initialize(
 
 ### Load an ad
 Ad is automatically loaded after being displayed or first time when you call initialize.
-But on safe side, you can call this method. This will load both rewarded and interstitial ads.
-If a particular ad is already loaded, it will not load it again.
+As a safety measure, you can call this method to load both rewarded and interstitial ads.
+If an ad is already loaded, it won't load again.
 ```dart
 ApslAds.instance.loadAd();
 ```
@@ -152,11 +164,12 @@ Widget build(BuildContext context) {
 }
 ```
 
-## Show Smart Banner Ad
+## Show All Banner Ad one by one
 
-Smart Banner will check one by one the priority ad networks provided by you, if any of the priority network failed to load by some reason then it will automatically jump and try to load the next one so we can prevent revenue loss. 
+Banners will attempt to load ad networks in the order you provided. If a network fails to load for any reason, it will automatically move on to the next one to prevent revenue loss.
 
-If you want to set the priority for Smart Banner, just pass the priorityAdNetworks in ApslSmartBannerAd constructor just like below.
+To set the order for All Banner, simply pass the `orderOfAdNetworks` parameter in the `ApslAllBannerAd` constructor like this:
+
 Other wise it will set by default as [admob, facebook, unity] and default AdSize is AdSize.banner,
 
 This is how you may show banner ad in widget-tree somewhere:
@@ -164,20 +177,25 @@ This is how you may show banner ad in widget-tree somewhere:
 ```dart
 @override
 Widget build(BuildContext context) {
-  Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      SomeWidget(),
-      const Spacer(),
-      const ApslSmartBannerAd(
-        priorityAdNetworks: [
-          AdNetwork.facebook,
-          AdNetwork.admob,
-          AdNetwork.unity,
-        ],
-        adSize: AdSize.largeBanner,
-      ),
-    ],
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('My App'),
+    ),
+    body: Column(
+      children: [
+        // Your other widgets...
+        ApslAllBannerAd(
+          orderOfAdNetworks: [
+            AdNetwork.facebook,
+            AdNetwork.admob,
+            AdNetwork.unity,
+          ],
+          adSize: AdSize.largeBanner,
+          // Other parameters...
+        ),
+        // Your other widgets...
+      ],
+    ),
   );
 }
 ```
@@ -188,7 +206,7 @@ Declare this object in the class
   StreamSubscription? _streamSubscription;
 ```
 
-We are showing InterstitialAd here and also checking if ad has been shown.
+The following code snippet demonstrates the process of displaying an interstitial ad and checking if it has been shown:
 If `true`, we are canceling the subscribed callbacks, if any.
 Then, we are listening to the Stream and accessing the particular event we need
 ```dart
