@@ -32,4 +32,16 @@ class AppAdIds {
     this.bannerId,
     this.nativeId,
   });
+
+  factory AppAdIds.fromJson(Map<String, dynamic> json) {
+    return AppAdIds(
+      appId: json['appId'] ?? '',
+      adNetwork: json['adNetwork'] ?? '',
+      appOpenId: json['appOpenId'],
+      interstitialId: json['interstitialId'],
+      rewardedId: json['rewardedId'],
+      bannerId: json['bannerId'],
+      nativeId: json['nativeId'],
+    );
+  }
 }
