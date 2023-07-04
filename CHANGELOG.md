@@ -1,2 +1,2 @@
-## 1.0.0
+## 1.1.0
 Bug fixes in banner ad and native ads

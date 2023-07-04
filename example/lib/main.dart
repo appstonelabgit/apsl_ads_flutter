@@ -54,69 +54,71 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text("List of Ads"),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitleWidget(context, title: 'App Open'),
-            AdListTile(
-              networkName: 'Admob AppOpen',
-              onTap: () => _showAd(AdNetwork.admob, AdUnitType.appOpen),
-            ),
-            const ApslSequenceNativeAd(templateType: TemplateType.medium),
-            const Divider(thickness: 2),
-            _sectionTitleWidget(context, title: 'Interstitial'),
-            AdListTile(
-              networkName: 'Admob Interstitial',
-              onTap: () => _showAd(AdNetwork.admob, AdUnitType.interstitial),
-            ),
-            AdListTile(
-              networkName: 'Facebook Interstitial',
-              onTap: () => _showAd(AdNetwork.facebook, AdUnitType.interstitial),
-            ),
-            AdListTile(
-              networkName: 'Unity Interstitial',
-              onTap: () => _showAd(AdNetwork.unity, AdUnitType.interstitial),
-            ),
-            AdListTile(
-              networkName: 'Show Interstitial one by one',
-              onTap: () => _showAvailableAd(AdUnitType.interstitial),
-            ),
-            const Divider(thickness: 2),
-            _sectionTitleWidget(context, title: 'Rewarded'),
-            AdListTile(
-              networkName: 'Admob Rewarded',
-              onTap: () => _showAd(AdNetwork.admob, AdUnitType.rewarded),
-            ),
-            AdListTile(
-              networkName: 'Facebook Rewarded',
-              onTap: () => _showAd(AdNetwork.facebook, AdUnitType.rewarded),
-            ),
-            AdListTile(
-              networkName: 'Unity Rewarded',
-              onTap: () => _showAd(AdNetwork.unity, AdUnitType.rewarded),
-            ),
-            AdListTile(
-              networkName: 'Show Rewarded one by one',
-              onTap: () => _showAvailableAd(AdUnitType.rewarded),
-            ),
-            const ApslSequenceBannerAd(
-              orderOfAdNetworks: [
-                AdNetwork.admob,
-                AdNetwork.unity,
-                AdNetwork.facebook,
-              ],
-            ),
-          ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionTitleWidget(context, title: 'App Open'),
+              AdListTile(
+                networkName: 'Admob AppOpen',
+                onTap: () => _showAd(AdNetwork.admob, AdUnitType.appOpen),
+              ),
+              const ApslSequenceNativeAd(templateType: TemplateType.small),
+              const Divider(thickness: 2),
+              _sectionTitleWidget(context, title: 'Interstitial'),
+              AdListTile(
+                networkName: 'Admob Interstitial',
+                onTap: () => _showAd(AdNetwork.admob, AdUnitType.interstitial),
+              ),
+              AdListTile(
+                networkName: 'Facebook Interstitial',
+                onTap: () =>
+                    _showAd(AdNetwork.facebook, AdUnitType.interstitial),
+              ),
+              AdListTile(
+                networkName: 'Unity Interstitial',
+                onTap: () => _showAd(AdNetwork.unity, AdUnitType.interstitial),
+              ),
+              AdListTile(
+                networkName: 'Show Interstitial one by one',
+                onTap: () => _showAvailableAd(AdUnitType.interstitial),
+              ),
+              const Divider(thickness: 2),
+              _sectionTitleWidget(context, title: 'Rewarded'),
+              AdListTile(
+                networkName: 'Admob Rewarded',
+                onTap: () => _showAd(AdNetwork.admob, AdUnitType.rewarded),
+              ),
+              AdListTile(
+                networkName: 'Facebook Rewarded',
+                onTap: () => _showAd(AdNetwork.facebook, AdUnitType.rewarded),
+              ),
+              AdListTile(
+                networkName: 'Unity Rewarded',
+                onTap: () => _showAd(AdNetwork.unity, AdUnitType.rewarded),
+              ),
+              AdListTile(
+                networkName: 'Show Rewarded one by one',
+                onTap: () => _showAvailableAd(AdUnitType.rewarded),
+              ),
+              const ApslSequenceBannerAd(
+                orderOfAdNetworks: [
+                  AdNetwork.admob,
+                  AdNetwork.unity,
+                  AdNetwork.facebook,
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _sectionTitleWidget(BuildContext context, {String title = ""}) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10, left: 15.0),
-      child: Text(
+    return ListTile(
+      title: Text(
         title,
         style: Theme.of(context)
             .textTheme

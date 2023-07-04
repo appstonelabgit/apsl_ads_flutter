@@ -4,19 +4,16 @@ import '../../apsl_ads_flutter.dart';
 
 class ApslAdmobNativeAd extends ApslAdBase {
   final AdRequest _adRequest;
-  final NativeTemplateStyle _nativeTemplateStyle;
+  final NativeTemplateStyle? nativeTemplateStyle;
   final TemplateType _templateType;
 
   ApslAdmobNativeAd(
     String adUnitId, {
     AdRequest? adRequest,
-    NativeTemplateStyle? nativeTemplateStyle,
+    this.nativeTemplateStyle,
     TemplateType? templateType,
   })  : _adRequest = adRequest ?? const AdRequest(),
         _templateType = templateType ?? TemplateType.medium,
-        _nativeTemplateStyle = nativeTemplateStyle ??
-            NativeTemplateStyle(
-                templateType: templateType ?? TemplateType.medium),
         super(adUnitId);
 
   NativeAd? _nativeAd;
@@ -59,9 +56,42 @@ class ApslAdmobNativeAd extends ApslAdBase {
           ad.dispose();
         },
       ),
-      nativeTemplateStyle: _nativeTemplateStyle,
+      nativeTemplateStyle: nativeTemplateStyle ?? getTemplate(),
       request: _adRequest,
     )..load();
+  }
+
+  NativeTemplateStyle getTemplate() {
+    return NativeTemplateStyle(
+      // Required: Choose a template.
+      templateType: _templateType,
+      // Optional: Customize the ad's style.
+      mainBackgroundColor: Colors.blue.withOpacity(0.1),
+      cornerRadius: 10.0,
+      callToActionTextStyle: NativeTemplateTextStyle(
+        textColor: Colors.white,
+        backgroundColor: Colors.blue,
+        style: NativeTemplateFontStyle.normal,
+        size: 16.0,
+      ),
+      primaryTextStyle: NativeTemplateTextStyle(
+        textColor: Colors.blue,
+        style: NativeTemplateFontStyle.normal,
+        size: 16.0,
+      ),
+      secondaryTextStyle: NativeTemplateTextStyle(
+        textColor: Colors.black,
+        // backgroundColor: Colors.white,
+        style: NativeTemplateFontStyle.bold,
+        size: 16.0,
+      ),
+      tertiaryTextStyle: NativeTemplateTextStyle(
+        textColor: Colors.brown,
+        backgroundColor: Colors.amber,
+        style: NativeTemplateFontStyle.normal,
+        size: 16.0,
+      ),
+    );
   }
 
   @override
@@ -70,17 +100,14 @@ class ApslAdmobNativeAd extends ApslAdBase {
       load();
       return const SizedBox();
     }
-
     return ConstrainedBox(
       constraints: BoxConstraints(
         minWidth: 320,
-        minHeight: _templateType == TemplateType.small
-            ? 90
-            : 320, // minimum recommended height
+        // minimum recommended height
+        minHeight: _templateType == TemplateType.small ? 90 : 320,
         maxWidth: 400,
-        maxHeight: _templateType == TemplateType.small
-            ? 200
-            : 400, // maximum recommended height
+        // maximum recommended height
+        maxHeight: _templateType == TemplateType.small ? 200 : 400,
       ),
       child: AdWidget(ad: _nativeAd!),
     );
