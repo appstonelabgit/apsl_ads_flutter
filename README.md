@@ -29,7 +29,7 @@ Update your app's `ios/Runner/Info.plist` file to add two keys:
 <string>YOUR_SDK_KEY</string>
 ```
 
-* You have to add `SKAdNetworkItems` for all networks provided by Apsl-ads-flutter [info.plist](https://github.com/nooralibutt/Apsl-ads/blob/master/example/ios/Runner/Info.plist) you can copy paste `SKAdNetworkItems` in  your own project.
+* You have to add `SKAdNetworkItems` for all networks provided by Apsl-ads-flutter [info.plist](https://github.com/appstonelabgit/apsl_ads_flutter/blob/main/example/ios/Runner/Info.plist) you can copy paste `SKAdNetworkItems` in  your own project.
 
 ### Android
 
@@ -133,11 +133,6 @@ ApslAds.instance.loadAd();
 ### Show interstitial or rewarded ad
 ```dart
 ApslAds.instance.showAd(AdUnitType.rewarded);
-```
-
-### Show random interstitial ad
-```dart
-ApslAds.instance.showRandomAd(AdUnitType.interstitial)
 ```
 
 ### Show appOpen ad

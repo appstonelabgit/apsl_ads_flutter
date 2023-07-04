@@ -4,14 +4,14 @@ import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 import 'package:flutter/material.dart';
 
 class ApslSequenceNativeAd extends StatefulWidget {
-  final List<AdNetwork> priorityAdNetworks;
+  final List<AdNetwork> orderOfAdNetworks;
   final NativeTemplateStyle? nativeTemplateStyle;
   final TemplateType? templateType;
   const ApslSequenceNativeAd({
     Key? key,
     this.nativeTemplateStyle,
     this.templateType,
-    this.priorityAdNetworks = const [
+    this.orderOfAdNetworks = const [
       AdNetwork.admob,
       AdNetwork.facebook,
     ],
@@ -33,7 +33,7 @@ class _ApslSequenceNativeAdState extends State<ApslSequenceNativeAd> {
 
   @override
   Widget build(BuildContext context) {
-    final length = widget.priorityAdNetworks.length;
+    final length = widget.orderOfAdNetworks.length;
     if (_currentADNetworkIndex >= length) {
       // return const SizedBox();
       _currentADNetworkIndex = 0;
@@ -41,8 +41,8 @@ class _ApslSequenceNativeAdState extends State<ApslSequenceNativeAd> {
 
     while (_currentADNetworkIndex < length) {
       if (_isNativeIdAvailable(
-          widget.priorityAdNetworks[_currentADNetworkIndex])) {
-        return _showNativeAd(widget.priorityAdNetworks[_currentADNetworkIndex]);
+          widget.orderOfAdNetworks[_currentADNetworkIndex])) {
+        return _showNativeAd(widget.orderOfAdNetworks[_currentADNetworkIndex]);
       }
 
       _currentADNetworkIndex++;

@@ -74,11 +74,13 @@ class ApslAdmobNativeAd extends ApslAdBase {
     return ConstrainedBox(
       constraints: BoxConstraints(
         minWidth: 320,
-        // minimum recommended height
-        minHeight: _templateType == TemplateType.small ? 90 : 320,
+        minHeight: _templateType == TemplateType.small
+            ? 90
+            : 320, // minimum recommended height
         maxWidth: 400,
-        // maximum recommended height
-        maxHeight: _templateType == TemplateType.small ? 200 : 400,
+        maxHeight: _templateType == TemplateType.small
+            ? 200
+            : 400, // maximum recommended height
       ),
       child: AdWidget(ad: _nativeAd!),
     );
