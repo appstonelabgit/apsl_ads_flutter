@@ -129,11 +129,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showAd(AdNetwork adNetwork, AdUnitType adUnitType) {
-    if (ApslAds.instance.showAd(adUnitType,
-        adNetwork: adNetwork,
-        shouldShowLoader: Platform.isAndroid,
-        context: context,
-        delayInSeconds: 1)) {
+    if (ApslAds.instance.showAd(
+      adUnitType,
+      adNetwork: adNetwork,
+      shouldShowLoader: Platform.isAndroid,
+      context: context,
+      delayInSeconds: 1,
+    )) {
       // Canceling the last callback subscribed
       _streamSubscription?.cancel();
       // Listening to the callback from showRewardedAd()

@@ -33,7 +33,7 @@ class AppAdIds {
     this.nativeId,
   });
 
-  factory AppAdIds.fromJson(Map<String, dynamic> json) {
+  factory AppAdIds.fromJson(Map<dynamic, dynamic> json) {
     return AppAdIds(
       appId: json['appId'] ?? '',
       adNetwork: json['adNetwork'] ?? '',

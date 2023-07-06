@@ -51,6 +51,9 @@ class ApslAds {
   int _rewardedAdIndex = 0;
   int _appOpenAdIndex = 0;
 
+  int _navigationCount = 0;
+  int _showNavigationAdAfterCount = 1;
+
   /// Initializes the Google Mobile Ads SDK.
   ///
   /// Call this method as early as possible after the app launches
@@ -68,8 +71,10 @@ class ApslAds {
     bool fbiOSAdvertiserTrackingEnabled = false,
     int appOpenAdOrientation = AppOpenAd.orientationPortrait,
     bool showAdBadge = false,
+    int showNavigationAdAfterCount = 1,
   }) async {
     _showAdBadge = showAdBadge;
+    _showNavigationAdAfterCount = showNavigationAdAfterCount;
     if (enableLogger) _logger.enable(enableLogger);
     adIdManager = manager;
     if (adMobAdRequest != null) {
@@ -526,6 +531,19 @@ class ApslAds {
           (adUnitType == null || adUnitType == e.adUnitType)) {
         e.dispose();
       }
+    }
+  }
+
+  /// This method is used to show navigation ad after every [showNavigationAdAfterCount] navigation
+  /// if [showNavigationAdAfterCount] is not provided, it will show ad after every 1 navigation
+  /// This will only show interstitial ad
+  bool showNavigationAd() {
+    if (_navigationCount % (_showNavigationAdAfterCount) == 0) {
+      _navigationCount++;
+      return showAd(AdUnitType.interstitial);
+    } else {
+      _navigationCount++;
+      return false;
     }
   }
 
