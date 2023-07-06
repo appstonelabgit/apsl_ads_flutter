@@ -537,7 +537,7 @@ class ApslAds {
   /// This method is used to show navigation ad after every [showNavigationAdAfterCount] navigation
   /// if [showNavigationAdAfterCount] is not provided, it will show ad after every 1 navigation
   /// This will only show interstitial ad
-  bool showNavigationAd() {
+  bool showAdOnNavigation() {
     if (_navigationCount % (_showNavigationAdAfterCount) == 0) {
       _navigationCount++;
       return showAd(AdUnitType.interstitial);

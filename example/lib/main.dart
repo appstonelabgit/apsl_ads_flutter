@@ -102,6 +102,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 networkName: 'Show Rewarded one by one',
                 onTap: () => _showAvailableAd(AdUnitType.rewarded),
               ),
+              AdListTile(
+                networkName: "Show navigation ad",
+                onTap: () => _showAdOnNavigation(AdUnitType.interstitial),
+              ),
               const ApslSequenceBannerAd(
                 orderOfAdNetworks: [
                   AdNetwork.admob,
@@ -159,6 +163,25 @@ class _HomeScreenState extends State<HomeScreen> {
         if (event.adUnitType == adUnitType) {
           _streamSubscription?.cancel();
           goToNextScreen();
+        }
+      });
+    } else {
+      goToNextScreen();
+    }
+  }
+
+  void _showAdOnNavigation(AdUnitType adUnitType) {
+    if (ApslAds.instance.showAdOnNavigation()) {
+      // Canceling the last callback subscribed
+      _streamSubscription?.cancel();
+      // Listening to the callback from showRewardedAd()
+      _streamSubscription = ApslAds.instance.onEvent.listen((event) {
+        if (event.adUnitType == adUnitType) {
+          if (event.type == AdEventType.adFailedToLoad ||
+              event.type == AdEventType.adDismissed) {
+            _streamSubscription?.cancel();
+            goToNextScreen();
+          }
         }
       });
     } else {
