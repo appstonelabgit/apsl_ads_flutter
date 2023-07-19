@@ -66,7 +66,7 @@ class ApslAdmobNativeAd extends ApslAdBase {
       // Required: Choose a template.
       templateType: _templateType,
       // Optional: Customize the ad's style.
-      mainBackgroundColor: Colors.blue.withOpacity(0.1),
+      mainBackgroundColor: Colors.transparent,
       cornerRadius: 10.0,
       callToActionTextStyle: NativeTemplateTextStyle(
         textColor: Colors.white,
@@ -87,7 +87,7 @@ class ApslAdmobNativeAd extends ApslAdBase {
       ),
       tertiaryTextStyle: NativeTemplateTextStyle(
         textColor: Colors.brown,
-        backgroundColor: Colors.amber,
+        backgroundColor: Colors.transparent,
         style: NativeTemplateFontStyle.normal,
         size: 16.0,
       ),

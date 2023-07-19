@@ -17,7 +17,7 @@ void main() async {
     fbTestingId: "DB4376A4F649F3EECA878BB77ED7BA08",
     adMobAdRequest: const AdRequest(),
     admobConfiguration: RequestConfiguration(testDeviceIds: []),
-    showAdBadge: Platform.isIOS,
+    showAdBadge: false,
     fbiOSAdvertiserTrackingEnabled: true,
   );
 
@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 networkName: 'Admob AppOpen',
                 onTap: () => _showAd(AdNetwork.admob, AdUnitType.appOpen),
               ),
-              const ApslSequenceNativeAd(templateType: TemplateType.small),
+              const ApslSequenceNativeAd(templateType: TemplateType.medium),
               const Divider(thickness: 2),
               _sectionTitleWidget(context, title: 'Interstitial'),
               AdListTile(
@@ -104,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               AdListTile(
                 networkName: "Show navigation ad",
-                onTap: () => _showAdOnNavigation(AdUnitType.interstitial),
+                onTap: () => _showAdOnNavigation(),
               ),
               const ApslSequenceBannerAd(
                 orderOfAdNetworks: [
@@ -170,13 +170,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _showAdOnNavigation(AdUnitType adUnitType) {
+  void _showAdOnNavigation() {
     if (ApslAds.instance.showAdOnNavigation()) {
       // Canceling the last callback subscribed
       _streamSubscription?.cancel();
       // Listening to the callback from showRewardedAd()
       _streamSubscription = ApslAds.instance.onEvent.listen((event) {
-        if (event.adUnitType == adUnitType) {
+        if (event.adUnitType == AdUnitType.interstitial) {
           if (event.type == AdEventType.adFailedToLoad ||
               event.type == AdEventType.adDismissed) {
             _streamSubscription?.cancel();
