@@ -430,7 +430,7 @@ class ApslAds {
           return false;
         }
       }
-      if (index < ads.length) {
+      if (ads.isNotEmpty) {
         final ad = ads[index];
 
         if (ad.isAdLoaded) {

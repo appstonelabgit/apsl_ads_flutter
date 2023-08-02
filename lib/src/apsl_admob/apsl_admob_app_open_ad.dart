@@ -41,6 +41,7 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
       orientation: _orientation,
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (AppOpenAd ad) {
+          _appOpenLoadTime = DateTime.now();
           _appOpenAd = ad;
           onAdLoaded?.call(adNetwork, adUnitType, ad);
 
@@ -72,7 +73,8 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
       return;
     }
 
-    if (DateTime.now().subtract(maxCacheDuration).isAfter(_appOpenLoadTime!)) {
+    if (_appOpenLoadTime != null &&
+        DateTime.now().subtract(maxCacheDuration).isAfter(_appOpenLoadTime!)) {
       onAdFailedToShow?.call(adNetwork, adUnitType, null,
           'Add was loaded before $maxCacheDuration, thats why sent a call for loading and will show automatically');
       _load(showAdOnLoad: true);
