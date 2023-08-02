@@ -391,68 +391,74 @@ class ApslAds {
     int delayInSeconds = 2,
     BuildContext? context,
   }) {
-    List<ApslAdBase> ads = [];
-    int index = 0;
-    switch (adUnitType) {
-      case AdUnitType.rewarded:
-        index = _rewardedAdIndex;
-        ads = _rewardedAds;
-        break;
-      case AdUnitType.interstitial:
-        index = _interstitialAdIndex;
-        ads = _interstitialAds;
-        break;
-      case AdUnitType.appOpen:
-        index = _appOpenAdIndex;
-        ads = _appOpenAds;
-        break;
-      default:
-        break;
-    }
-
-    if (adNetwork != AdNetwork.any) {
-      final ad = ads.firstWhereOrNull((e) => adNetwork == e.adNetwork);
-      if (ad?.isAdLoaded == true) {
-        if (ad?.adUnitType == AdUnitType.interstitial &&
-            shouldShowLoader &&
-            context != null) {
-          showLoaderDialog(context, delay: delayInSeconds)
-              .then((_) => ad?.show());
-        } else {
-          ad?.show();
-        }
-        return true;
-      } else {
-        _logger.logInfo(
-            '${ad?.adNetwork} ${ad?.adUnitType} was not loaded, so called loading');
-        ad?.load();
-        return false;
+    try {
+      List<ApslAdBase> ads = [];
+      int index = 0;
+      switch (adUnitType) {
+        case AdUnitType.rewarded:
+          index = _rewardedAdIndex;
+          ads = _rewardedAds;
+          break;
+        case AdUnitType.interstitial:
+          index = _interstitialAdIndex;
+          ads = _interstitialAds;
+          break;
+        case AdUnitType.appOpen:
+          index = _appOpenAdIndex;
+          ads = _appOpenAds;
+          break;
+        default:
+          break;
       }
-    }
 
-    final ad = ads[index];
-
-    if (ad.isAdLoaded) {
-      if (adNetwork == AdNetwork.any || adNetwork == ad.adNetwork) {
-        if (ad.adUnitType == AdUnitType.interstitial &&
-            shouldShowLoader &&
-            context != null) {
-          showLoaderDialog(context, delay: delayInSeconds)
-              .then((_) => ad.show());
+      if (adNetwork != AdNetwork.any) {
+        final ad = ads.firstWhereOrNull((e) => adNetwork == e.adNetwork);
+        if (ad?.isAdLoaded == true) {
+          if (ad?.adUnitType == AdUnitType.interstitial &&
+              shouldShowLoader &&
+              context != null) {
+            showLoaderDialog(context, delay: delayInSeconds)
+                .then((_) => ad?.show());
+          } else {
+            ad?.show();
+          }
+          return true;
         } else {
-          ad.show();
+          _logger.logInfo(
+              '${ad?.adNetwork} ${ad?.adUnitType} was not loaded, so called loading');
+          ad?.load();
+          return false;
         }
+      }
+      if (index < ads.length) {
+        final ad = ads[index];
+
+        if (ad.isAdLoaded) {
+          if (adNetwork == AdNetwork.any || adNetwork == ad.adNetwork) {
+            if (ad.adUnitType == AdUnitType.interstitial &&
+                shouldShowLoader &&
+                context != null) {
+              showLoaderDialog(context, delay: delayInSeconds)
+                  .then((_) => ad.show());
+            } else {
+              ad.show();
+            }
+            updateAdIndex(adUnitType);
+            return true;
+          }
+        } else {
+          _logger.logInfo(
+              '${ad.adNetwork} ${ad.adUnitType} was not loaded, so called loading');
+          ad.load();
+        }
+
         updateAdIndex(adUnitType);
-        return true;
       }
-    } else {
-      _logger.logInfo(
-          '${ad.adNetwork} ${ad.adUnitType} was not loaded, so called loading');
-      ad.load();
-    }
 
-    updateAdIndex(adUnitType);
-    return false;
+      return false;
+    } catch (e) {
+      return false;
+    }
   }
 
   /// This will load both rewarded and interstitial ads.
