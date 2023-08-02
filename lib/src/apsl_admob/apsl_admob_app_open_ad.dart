@@ -8,6 +8,12 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
   AppOpenAd? _appOpenAd;
   bool _isShowingAd = false;
 
+  // Maximum duration allowed between loading and showing the ad.
+  final Duration maxCacheDuration = const Duration(hours: 4);
+
+  // Keep track of load time so we don't show an expired ad.
+  DateTime? _appOpenLoadTime;
+
   @override
   AdNetwork get adNetwork => AdNetwork.admob;
 
@@ -63,6 +69,13 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
     if (_isShowingAd) {
       onAdFailedToShow?.call(adNetwork, adUnitType, null,
           'Tried to show ad while already showing an ad.');
+      return;
+    }
+
+    if (DateTime.now().subtract(maxCacheDuration).isAfter(_appOpenLoadTime!)) {
+      onAdFailedToShow?.call(adNetwork, adUnitType, null,
+          'Add was loaded before $maxCacheDuration, thats why sent a call for loading and will show automatically');
+      _load(showAdOnLoad: true);
       return;
     }
 
