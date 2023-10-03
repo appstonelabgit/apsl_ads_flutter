@@ -20,11 +20,13 @@ Simplify the integration of ads from various ad networks into your Flutter app e
 
 #### Update your Info.plist
 
-* The key for Google Ads **are required** in Info.plist.
+* The key for Google Ads and Applovin **are required** in Info.plist.
 
 Update your app's `ios/Runner/Info.plist` file to add two keys:
 
 ```xml
+<key>AppLovinSdkKey</key>
+<string>YOUR_SDK_KEY</string>
 <key>GADApplicationIdentifier</key>
 <string>YOUR_SDK_KEY</string>
 ```
@@ -38,6 +40,8 @@ Update your app's `ios/Runner/Info.plist` file to add two keys:
 ```xml
 <manifest>
     <application>
+        <meta-data android:name="applovin.sdk.key"
+            android:value="YOUR_SDK_KEY"/>
         <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
@@ -94,14 +98,25 @@ class TestAdsIdManager extends AdsIdManager {
           bannerId: 'IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID',
           rewardedId: 'VID_HD_16_9_46S_APP_INSTALL#YOUR_PLACEMENT_ID',
         ),
+        AppAdIds(
+          adNetwork: 'applovin',
+          appId: 'YOUR_SDK_KEY',
+          bannerId: Platform.isAndroid
+              ? 'ANDROID_BANNER_AD_UNIT_ID'
+              : 'IOS_BANNER_AD_UNIT_ID',
+          interstitialId: Platform.isAndroid
+              ? 'ANDROID_INTER_AD_UNIT_ID'
+              : 'IOS_INTER_AD_UNIT_ID',
+          rewardedId: Platform.isAndroid
+              ? 'ANDROID_REWARDED_AD_UNIT_ID'
+              : 'IOS_REWARDED_AD_UNIT_ID',
+        ),
       ];
 }
 
 ```
 
 ## Initialize the SDK
-
-Before loading ads, have your app initialize the Mobile Ads SDK by calling `ApslAds.instance.initialize()` which initializes the SDK and returns a `Future` that finishes once initialization is complete (or after a 30-second timeout). This needs to be done only once, ideally right before running the app.
 
 Before you start showing ads in your app, make sure to initialize the Mobile Ads SDK by calling `ApslAds.instance.initialize()`. This will initialize the SDK and return a `Future` that completes when the initialization is done (or after a 30-second timeout). You only need to do this once, preferably right before running your app.
 
@@ -114,6 +129,8 @@ const IAdIdManager adIdManager = TestAdIdManager();
 ApslAds.instance.initialize(
     adIdManager,
     adMobAdRequest: const AdRequest(),
+    // Set this to true if you want to restrict ads for applovin (age below 16 years)
+    isAgeRestrictedUserForApplovin:true,
     // To enable Facebook Test mode ads
     fbTestMode: true,
     admobConfiguration: RequestConfiguration(testDeviceIds: []),
@@ -184,6 +201,7 @@ Widget build(BuildContext context) {
             AdNetwork.facebook,
             AdNetwork.admob,
             AdNetwork.unity,
+            AdNetwork.applovin,
           ],
           adSize: AdSize.largeBanner,
           // Other parameters...

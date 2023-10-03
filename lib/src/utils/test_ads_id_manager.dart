@@ -43,5 +43,18 @@ class TestAdsIdManager extends AdsIdManager {
           bannerId: 'IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID',
           rewardedId: 'VID_HD_16_9_46S_APP_INSTALL#YOUR_PLACEMENT_ID',
         ),
+        AppAdIds(
+          adNetwork: 'applovin',
+          appId: 'YOUR_SDK_KEY',
+          bannerId: Platform.isAndroid
+              ? 'ANDROID_BANNER_AD_UNIT_ID'
+              : 'IOS_BANNER_AD_UNIT_ID',
+          interstitialId: Platform.isAndroid
+              ? 'ANDROID_INTER_AD_UNIT_ID'
+              : 'IOS_INTER_AD_UNIT_ID',
+          rewardedId: Platform.isAndroid
+              ? 'ANDROID_REWARDED_AD_UNIT_ID'
+              : 'IOS_REWARDED_AD_UNIT_ID',
+        )
       ];
 }
