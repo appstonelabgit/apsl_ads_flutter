@@ -11,7 +11,7 @@ dependencies:
     path: ../
   flutter:
     sdk: flutter
-  webview_flutter: ^4.2.2
+  webview_flutter: ^4.4.1
 
 dev_dependencies:
   flutter_lints: ^2.0.0

@@ -1,8 +1,12 @@
 import 'dart:async';
 
+import 'package:applovin_max/applovin_max.dart';
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 import 'package:apsl_ads_flutter/src/apsl_admob/apsl_admob_interstitial_ad.dart';
 import 'package:apsl_ads_flutter/src/apsl_admob/apsl_admob_rewarded_ad.dart';
+import 'package:apsl_ads_flutter/src/apsl_applovin/apsl_applovin_banner_ad.dart';
+import 'package:apsl_ads_flutter/src/apsl_applovin/apsl_applovin_interstitial_ad.dart';
+import 'package:apsl_ads_flutter/src/apsl_applovin/apsl_applovin_rewarded_ad.dart';
 import 'package:apsl_ads_flutter/src/apsl_facebook/apsl_facebook_banner_ad.dart';
 import 'package:apsl_ads_flutter/src/apsl_facebook/apsl_facebook_full_screen_ad.dart';
 import 'package:apsl_ads_flutter/src/apsl_unity/apsl_unity_ad.dart';
@@ -14,7 +18,6 @@ import 'package:collection/collection.dart';
 import 'package:easy_audience_network/easy_audience_network.dart';
 import 'package:flutter/material.dart';
 import 'package:unity_ads_plugin/unity_ads_plugin.dart';
-
 import 'apsl_admob/apsl_admob_native_ad.dart';
 
 class ApslAds {
@@ -54,6 +57,9 @@ class ApslAds {
   int _navigationCount = 0;
   int _showNavigationAdAfterCount = 1;
 
+  /// [_isMobileAdNetworkInitialized] is used to check if admob is initialized or not
+  bool _isMobileAdNetworkInitialized = false;
+
   /// Initializes the Google Mobile Ads SDK.
   ///
   /// Call this method as early as possible after the app launches
@@ -69,6 +75,7 @@ class ApslAds {
     bool enableLogger = true,
     String? fbTestingId,
     bool fbiOSAdvertiserTrackingEnabled = false,
+    bool isAgeRestrictedUserForApplovin = false,
     int appOpenAdOrientation = AppOpenAd.orientationPortrait,
     bool showAdBadge = false,
     int showNavigationAdAfterCount = 1,
@@ -86,20 +93,26 @@ class ApslAds {
     }
 
     for (var appAdId in manager.appAdIds) {
-      final adNetworkName = getAdNetworkFromString(appAdId.adNetwork);
-      switch (adNetworkName) {
-        case AdNetwork.admob:
-          if (appAdId.appId.isNotEmpty) {
-            final response = await MobileAds.instance.initialize();
-            final status = response.adapterStatuses.values.firstOrNull?.state;
+      if (appAdId.appId.isNotEmpty) {
+        final adNetworkName = getAdNetworkFromString(appAdId.adNetwork);
+        switch (adNetworkName) {
+          case AdNetwork.admob:
 
-            response.adapterStatuses.forEach((key, value) {
-              _logger.logInfo(
-                  'Google-mobile-ads Adapter status for $key: ${value.description}');
-            });
+            // Initializing Mobile Ads SDK
+            if (!_isMobileAdNetworkInitialized) {
+              final response = await MobileAds.instance.initialize();
+              final status = response.adapterStatuses.values.firstOrNull?.state;
 
-            _eventController.fireNetworkInitializedEvent(
-                AdNetwork.admob, status == AdapterInitializationState.ready);
+              response.adapterStatuses.forEach((key, value) {
+                _logger.logInfo(
+                    'Google-mobile-ads Adapter status for $key: ${value.description}');
+              });
+
+              _eventController.fireNetworkInitializedEvent(
+                  AdNetwork.admob, status == AdapterInitializationState.ready);
+
+              _isMobileAdNetworkInitialized = true;
+            }
 
             // Initializing admob Ads
             await ApslAds.instance._initAdmob(
@@ -109,33 +122,41 @@ class ApslAds {
               appOpenAdOrientation: appOpenAdOrientation,
               isShowAppOpenOnAppStateChange: isShowAppOpenOnAppStateChange,
             );
-          }
-          break;
-        case AdNetwork.unity:
-          if (appAdId.appId.isNotEmpty) {
+
+            break;
+          case AdNetwork.unity:
+            // Initializing unity Ads
             ApslAds.instance._initUnity(
               unityGameId: appAdId.appId,
               testMode: unityTestMode,
               interstitialPlacementId: appAdId.interstitialId,
               rewardedPlacementId: appAdId.rewardedId,
             );
-          }
-          break;
-        case AdNetwork.facebook:
-          if (appAdId.appId.isNotEmpty) {
-            _initFacebook(
+            break;
+          case AdNetwork.facebook:
+            // Initializing facebook Ads
+            ApslAds.instance._initFacebook(
               testingId: fbTestingId,
               testMode: fbTestMode,
               iOSAdvertiserTrackingEnabled: fbiOSAdvertiserTrackingEnabled,
               interstitialPlacementId: appAdId.interstitialId,
               rewardedPlacementId: appAdId.rewardedId,
             );
-          }
-          break;
-        case AdNetwork.any:
-          break;
-        default:
-          break;
+            break;
+          case AdNetwork.appLovin:
+            // Initializing applovin Ads
+            ApslAds.instance._initAppLovin(
+              sdkKey: appAdId.appId,
+              keywords: adMobAdRequest?.keywords,
+              isAgeRestrictedUser: isAgeRestrictedUserForApplovin,
+              interstitialAdUnitId: appAdId.interstitialId,
+              rewardedAdUnitId: appAdId.rewardedId,
+            );
+          case AdNetwork.any:
+            break;
+          default:
+            break;
+        }
       }
     }
   }
@@ -172,6 +193,14 @@ class ApslAds {
             'You are trying to create a banner and Facebook Banner id is null in ad id manager');
         if (bannerId != null) {
           ad = ApslFacebookBannerAd(bannerId, adSize: adSize);
+          _eventController.setupEvents(ad);
+        }
+        break;
+      case AdNetwork.appLovin:
+        assert(bannerId != null,
+            'You are trying to create a banner and Applovin Banner id is null in ad id manager');
+        if (bannerId != null) {
+          ad = ApslApplovinBannerAd(bannerId);
           _eventController.setupEvents(ad);
         }
         break;
@@ -276,6 +305,59 @@ class ApslAds {
       }
       _appOpenAds.add(appOpenAdManager);
       _eventController.setupEvents(appOpenAdManager);
+    }
+  }
+
+  Future<void> _initAppLovin({
+    required String sdkKey,
+    bool? isAgeRestrictedUser,
+    String? interstitialAdUnitId,
+    String? rewardedAdUnitId,
+    List<String>? keywords,
+  }) async {
+    final response = await AppLovinMAX.initialize(sdkKey);
+
+    AppLovinMAX.targetingData.maximumAdContentRating =
+        isAgeRestrictedUser == true
+            ? AdContentRating.allAudiences
+            : AdContentRating.none;
+
+    if (keywords != null) {
+      AppLovinMAX.targetingData.keywords = keywords;
+    }
+
+    if (response != null) {
+      _eventController.fireNetworkInitializedEvent(AdNetwork.appLovin, true);
+    } else {
+      _eventController.fireNetworkInitializedEvent(AdNetwork.appLovin, false);
+    }
+
+    // init interstitial ads
+    if (interstitialAdUnitId != null &&
+        _interstitialAds.doesNotContain(
+          AdNetwork.appLovin,
+          AdUnitType.interstitial,
+          interstitialAdUnitId,
+        )) {
+      final ad = ApslApplovinInterstitialAd(interstitialAdUnitId);
+      _interstitialAds.add(ad);
+      _eventController.setupEvents(ad);
+
+      await ad.load();
+    }
+
+    // init rewarded ads
+    if (rewardedAdUnitId != null &&
+        _rewardedAds.doesNotContain(
+          AdNetwork.appLovin,
+          AdUnitType.rewarded,
+          rewardedAdUnitId,
+        )) {
+      final ad = ApslApplovinRewardedAd(rewardedAdUnitId);
+      _rewardedAds.add(ad);
+      _eventController.setupEvents(ad);
+
+      await ad.load();
     }
   }
 

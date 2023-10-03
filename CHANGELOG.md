@@ -6,3 +6,7 @@ Added showAdOnNavigation function which will show interstitial on defined naviga
 
 ## 1.2.2
 Bug fixes and improvement in intestitial ads and app open ads
+
+## 1.2.3
+Added Applovin Support
+Code refactor

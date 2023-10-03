@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-enum AdNetwork { any, admob, unity, facebook }
+enum AdNetwork { any, admob, unity, facebook, appLovin }
 
 extension AdNetworkExtension on AdNetwork {
   String get value => describeEnum(this);
