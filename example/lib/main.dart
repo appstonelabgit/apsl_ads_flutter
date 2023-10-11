@@ -118,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     _loadAndShowRewardedAds(adNetwork: AdNetwork.unity),
               ),
               AdListTile(
-                networkName: 'Unity Rewarded',
+                networkName: 'AppLovin Rewarded',
                 onTap: () =>
                     _loadAndShowRewardedAds(adNetwork: AdNetwork.appLovin),
               ),
