@@ -52,7 +52,12 @@ class ApslAdmobBannerAd extends ApslAdBase {
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
           _bannerAd = null;
           _isAdLoaded = false;
-          onAdFailedToLoad?.call(adNetwork, adUnitType, ad, error.toString());
+          onAdFailedToLoad?.call(
+            adNetwork,
+            adUnitType,
+            ad,
+            errorMessage: error.toString(),
+          );
           ad.dispose();
         },
         onAdOpened: (Ad ad) => onAdClicked?.call(adNetwork, adUnitType, ad),

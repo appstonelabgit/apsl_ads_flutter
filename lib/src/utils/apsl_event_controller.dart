@@ -24,7 +24,13 @@ class ApslEventController {
   }
 
   void _onAdLoadedMethod(
-      AdNetwork adNetwork, AdUnitType adUnitType, Object? data) {
+    AdNetwork adNetwork,
+    AdUnitType adUnitType,
+    Object? data, {
+    String? errorMessage,
+    String? rewardType,
+    num? rewardAmount,
+  }) {
     _onEventController.add(AdEvent(
       type: AdEventType.adLoaded,
       adNetwork: adNetwork,
@@ -34,7 +40,13 @@ class ApslEventController {
   }
 
   void _onAdShowedMethod(
-      AdNetwork adNetwork, AdUnitType adUnitType, Object? data) {
+    AdNetwork adNetwork,
+    AdUnitType adUnitType,
+    Object? data, {
+    String? errorMessage,
+    String? rewardType,
+    num? rewardAmount,
+  }) {
     _onEventController.add(AdEvent(
       type: AdEventType.adShowed,
       adNetwork: adNetwork,
@@ -43,8 +55,14 @@ class ApslEventController {
     ));
   }
 
-  void _onAdFailedToLoadMethod(AdNetwork adNetwork, AdUnitType adUnitType,
-      Object? data, String errorMessage) {
+  void _onAdFailedToLoadMethod(
+    AdNetwork adNetwork,
+    AdUnitType adUnitType,
+    Object? data, {
+    String? errorMessage,
+    String? rewardType,
+    num? rewardAmount,
+  }) {
     _onEventController.add(AdEvent(
       type: AdEventType.adFailedToLoad,
       adNetwork: adNetwork,
@@ -54,8 +72,14 @@ class ApslEventController {
     ));
   }
 
-  void _onAdFailedToShowMethod(AdNetwork adNetwork, AdUnitType adUnitType,
-      Object? data, String errorMessage) {
+  void _onAdFailedToShowMethod(
+    AdNetwork adNetwork,
+    AdUnitType adUnitType,
+    Object? data, {
+    String? errorMessage,
+    String? rewardType,
+    num? rewardAmount,
+  }) {
     _onEventController.add(AdEvent(
       type: AdEventType.adFailedToShow,
       adNetwork: adNetwork,
@@ -66,7 +90,13 @@ class ApslEventController {
   }
 
   void _onAdDismissedMethod(
-      AdNetwork adNetwork, AdUnitType adUnitType, Object? data) {
+    AdNetwork adNetwork,
+    AdUnitType adUnitType,
+    Object? data, {
+    String? errorMessage,
+    String? rewardType,
+    num? rewardAmount,
+  }) {
     _onEventController.add(AdEvent(
       type: AdEventType.adDismissed,
       adNetwork: adNetwork,
@@ -75,8 +105,14 @@ class ApslEventController {
     ));
   }
 
-  void _onEarnedRewardMethod(AdNetwork adNetwork, AdUnitType adUnitType,
-      String? rewardType, num? rewardAmount) {
+  void _onEarnedRewardMethod(
+    AdNetwork adNetwork,
+    AdUnitType adUnitType,
+    Object? data, {
+    String? rewardType,
+    String? errorMessage,
+    num? rewardAmount,
+  }) {
     _onEventController.add(AdEvent(
       type: AdEventType.earnedReward,
       adNetwork: adNetwork,

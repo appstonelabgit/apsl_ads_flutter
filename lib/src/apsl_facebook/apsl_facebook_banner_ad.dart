@@ -62,7 +62,7 @@ class ApslFacebookBannerAd extends ApslAdBase {
       onError: (code, value) {
         _isAdLoaded = false;
         onAdFailedToLoad?.call(adNetwork, adUnitType, null,
-            'Error occurred while loading $code $value ad');
+            errorMessage: 'Error occurred while loading $code $value ad');
       },
     );
   }

@@ -49,7 +49,11 @@ class ApslAdmobInterstitialAd extends ApslAdBase {
           _interstitialAd = null;
           _isAdLoaded = false;
           onAdFailedToLoad?.call(
-              adNetwork, adUnitType, error, error.toString());
+            adNetwork,
+            adUnitType,
+            error,
+            errorMessage: error.toString(),
+          );
         },
       ),
     );
@@ -71,7 +75,12 @@ class ApslAdmobInterstitialAd extends ApslAdBase {
         load();
       },
       onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
-        onAdFailedToShow?.call(adNetwork, adUnitType, ad, error.toString());
+        onAdFailedToShow?.call(
+          adNetwork,
+          adUnitType,
+          ad,
+          errorMessage: error.toString(),
+        );
 
         ad.dispose();
         load();

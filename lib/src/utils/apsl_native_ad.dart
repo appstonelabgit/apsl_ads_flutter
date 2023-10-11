@@ -65,7 +65,13 @@ class _ApslNativeAdState extends State<ApslNativeAd> {
   }
 
   void onNativeAdReadyForSetState(
-      AdNetwork adNetwork, AdUnitType adUnitType, Object? data) {
+    AdNetwork adNetwork,
+    AdUnitType adUnitType,
+    Object? data, {
+    String? errorMessage,
+    String? rewardType,
+    num? rewardAmount,
+  }) {
     setState(() {});
   }
 }

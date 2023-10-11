@@ -20,19 +20,26 @@ abstract class ApslAdBase {
   ApslAdCallback? onAdLoaded;
   ApslAdCallback? onAdShowed;
   ApslAdCallback? onAdClicked;
-  ApslAdFailedCallback? onAdFailedToLoad;
-  ApslAdFailedCallback? onAdFailedToShow;
+  ApslAdCallback? onAdFailedToLoad;
+  ApslAdCallback? onAdFailedToShow;
   ApslAdCallback? onAdDismissed;
   ApslAdCallback? onBannerAdReadyForSetState;
   ApslAdCallback? onNativeAdReadyForSetState;
-  ApslAdEarnedReward? onEarnedReward;
+  ApslAdCallback? onEarnedReward;
 }
 
 typedef ApslAdNetworkInitialized = void Function(
     AdNetwork adNetwork, bool isInitialized, Object? data);
-typedef ApslAdFailedCallback = void Function(AdNetwork adNetwork,
-    AdUnitType adUnitType, Object? data, String errorMessage);
 typedef ApslAdCallback = void Function(
-    AdNetwork adNetwork, AdUnitType adUnitType, Object? data);
-typedef ApslAdEarnedReward = void Function(AdNetwork adNetwork,
-    AdUnitType adUnitType, String? rewardType, num? rewardAmount);
+  AdNetwork adNetwork,
+  AdUnitType adUnitType,
+  Object? data, {
+  String? errorMessage,
+  String? rewardType,
+  num? rewardAmount,
+});
+
+// typedef ApslAdFailedCallback = void Function(AdNetwork adNetwork,
+//     AdUnitType adUnitType, Object? data, String errorMessage);
+// typedef ApslAdEarnedReward = void Function(AdNetwork adNetwork,
+//     AdUnitType adUnitType, String? rewardType, num? rewardAmount);

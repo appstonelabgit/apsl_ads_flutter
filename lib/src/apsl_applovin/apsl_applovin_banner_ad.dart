@@ -35,8 +35,13 @@ class ApslApplovinBannerAd extends ApslAdBase {
         },
         onAdLoadFailedCallback: (adUnitId, error) {
           _isLoaded = false;
-          onAdFailedToLoad?.call(adNetwork, adUnitType, null,
-              'Error occurred while loading $adNetwork ad with ${error.code.toString()} and message:  ${error.message}');
+          onAdFailedToLoad?.call(
+            adNetwork,
+            adUnitType,
+            null,
+            errorMessage:
+                'Error occurred while loading $adNetwork ad with ${error.code.toString()} and message:  ${error.message}',
+          );
         },
         onAdClickedCallback: (_) {
           onAdClicked?.call(adNetwork, adUnitType, null);

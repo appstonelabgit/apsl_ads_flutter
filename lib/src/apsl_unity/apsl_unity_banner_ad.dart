@@ -53,8 +53,8 @@ class ApslUnityBannerAd extends ApslAdBase {
   void onFailedToLoadUnityAd(
       String placementId, UnityAdsLoadError error, String errorMessage) {
     _isAdLoaded = false;
-    onAdFailedToLoad?.call(
-        adNetwork, adUnitType, error, 'Error occurred while loading unity ad');
+    onAdFailedToLoad?.call(adNetwork, adUnitType, error,
+        errorMessage: 'Error occurred while loading unity ad');
   }
 
   void onCompleteUnityBannerAd(args) {
@@ -67,7 +67,7 @@ class ApslUnityBannerAd extends ApslAdBase {
       String placementId, UnityAdsBannerError error, String errorMessage) {
     _isAdLoaded = false;
     onAdFailedToShow?.call(adNetwork, adUnitType, error,
-        'Error occurred while loading unity banner ad');
+        errorMessage: 'Error occurred while loading unity banner ad');
   }
 
   void onClickUnityBannerAd(String placementId) {

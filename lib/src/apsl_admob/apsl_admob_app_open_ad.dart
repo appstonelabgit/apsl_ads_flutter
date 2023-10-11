@@ -52,7 +52,11 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
         onAdFailedToLoad: (LoadAdError error) {
           _appOpenAd = null;
           onAdFailedToLoad?.call(
-              adNetwork, adUnitType, error, error.toString());
+            adNetwork,
+            adUnitType,
+            error,
+            errorMessage: error.toString(),
+          );
         },
       ),
     );
@@ -61,22 +65,36 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
   @override
   show() async {
     if (!isAdLoaded) {
-      onAdFailedToShow?.call(adNetwork, adUnitType, null,
-          'Tried to show ad but no ad was loaded, now sent a call for loading and will show automatically');
+      onAdFailedToShow?.call(
+        adNetwork,
+        adUnitType,
+        null,
+        errorMessage:
+            'Tried to show ad but no ad was loaded, now sent a call for loading and will show automatically',
+      );
       _load(showAdOnLoad: true);
       return;
     }
 
     if (_isShowingAd) {
-      onAdFailedToShow?.call(adNetwork, adUnitType, null,
-          'Tried to show ad while already showing an ad.');
+      onAdFailedToShow?.call(
+        adNetwork,
+        adUnitType,
+        null,
+        errorMessage: 'Tried to show ad while already showing an ad.',
+      );
       return;
     }
 
     if (_appOpenLoadTime != null &&
         DateTime.now().subtract(maxCacheDuration).isAfter(_appOpenLoadTime!)) {
-      onAdFailedToShow?.call(adNetwork, adUnitType, null,
-          'Add was loaded before $maxCacheDuration, thats why sent a call for loading and will show automatically');
+      onAdFailedToShow?.call(
+        adNetwork,
+        adUnitType,
+        null,
+        errorMessage:
+            'Add was loaded before $maxCacheDuration, thats why sent a call for loading and will show automatically',
+      );
       _load(showAdOnLoad: true);
       return;
     }
@@ -94,7 +112,12 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
       },
       onAdFailedToShowFullScreenContent: (AppOpenAd ad, AdError error) {
         _isShowingAd = false;
-        onAdFailedToShow?.call(adNetwork, adUnitType, ad, error.toString());
+        onAdFailedToShow?.call(
+          adNetwork,
+          adUnitType,
+          ad,
+          errorMessage: error.toString(),
+        );
         ad.dispose();
         _appOpenAd = null;
       },

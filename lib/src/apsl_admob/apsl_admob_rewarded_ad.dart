@@ -6,12 +6,17 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class ApslAdmobRewardedAd extends ApslAdBase {
   final AdRequest _adRequest;
   final bool _immersiveModeEnabled;
+  final bool _preLoadRewardedAds;
 
-  ApslAdmobRewardedAd(
-    String adUnitId,
-    this._adRequest,
-    this._immersiveModeEnabled,
-  ) : super(adUnitId);
+  ApslAdmobRewardedAd({
+    required String adUnitId,
+    required AdRequest adRequest,
+    required bool immersiveModeEnabled,
+    required bool preLoadRewardedAds,
+  })  : _adRequest = adRequest,
+        _immersiveModeEnabled = immersiveModeEnabled,
+        _preLoadRewardedAds = preLoadRewardedAds,
+        super(adUnitId);
 
   RewardedAd? _rewardedAd;
   bool _isAdLoaded = false;
@@ -47,7 +52,11 @@ class ApslAdmobRewardedAd extends ApslAdBase {
           _rewardedAd = null;
           _isAdLoaded = false;
           onAdFailedToLoad?.call(
-              adNetwork, adUnitType, error, error.toString());
+            adNetwork,
+            adUnitType,
+            error,
+            errorMessage: error.toString(),
+          );
         }));
   }
 
@@ -64,19 +73,29 @@ class ApslAdmobRewardedAd extends ApslAdBase {
         onAdDismissed?.call(adNetwork, adUnitType, ad);
 
         ad.dispose();
-        load();
+        if (_preLoadRewardedAds) load(); //dv removed preloading of rewarded ad
       },
       onAdFailedToShowFullScreenContent: (RewardedAd ad, AdError error) {
-        onAdFailedToShow?.call(adNetwork, adUnitType, ad, error.toString());
+        onAdFailedToShow?.call(
+          adNetwork,
+          adUnitType,
+          ad,
+          errorMessage: error.toString(),
+        );
 
         ad.dispose();
-        load();
+        if (_preLoadRewardedAds) load(); //dv removed preloading of rewarded ad
       },
     );
 
     ad.setImmersiveMode(_immersiveModeEnabled);
     ad.show(onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
-      onEarnedReward?.call(adNetwork, adUnitType, reward.type, reward.amount);
+      onEarnedReward?.call(
+        adNetwork,
+        adUnitType,
+        reward.type,
+        rewardAmount: reward.amount,
+      );
     });
     _rewardedAd = null;
     _isAdLoaded = false;

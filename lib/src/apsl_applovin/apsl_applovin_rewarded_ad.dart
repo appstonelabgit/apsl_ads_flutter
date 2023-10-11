@@ -48,15 +48,23 @@ class ApslApplovinRewardedAd extends ApslAdBase {
         },
         onAdLoadFailedCallback: (_, __) {
           _isLoaded = false;
-          onAdFailedToLoad?.call(adNetwork, adUnitType, null,
-              'Error occurred while loading $adNetwork ad');
+          onAdFailedToLoad?.call(
+            adNetwork,
+            adUnitType,
+            null,
+            errorMessage: 'Error occurred while loading $adNetwork ad',
+          );
         },
         onAdDisplayedCallback: (_) {
           onAdShowed?.call(adNetwork, adUnitType, null);
         },
         onAdDisplayFailedCallback: (_, __) {
-          onAdFailedToShow?.call(adNetwork, adUnitType, null,
-              'Error occurred while showing $adNetwork ad');
+          onAdFailedToShow?.call(
+            adNetwork,
+            adUnitType,
+            null,
+            errorMessage: 'Error occurred while showing $adNetwork ad',
+          );
         },
         onAdClickedCallback: (_) {
           onAdClicked?.call(adNetwork, adUnitType, null);
@@ -65,7 +73,7 @@ class ApslApplovinRewardedAd extends ApslAdBase {
           onAdDismissed?.call(adNetwork, adUnitType, null);
         },
         onAdReceivedRewardCallback: (_, __) {
-          onEarnedReward?.call(adNetwork, adUnitType, null, null);
+          onEarnedReward?.call(adNetwork, adUnitType, null, rewardAmount: null);
         },
       ),
     );

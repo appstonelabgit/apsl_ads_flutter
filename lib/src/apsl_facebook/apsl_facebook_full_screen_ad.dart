@@ -6,11 +6,18 @@ import 'package:easy_audience_network/easy_audience_network.dart';
 class ApslFacebookFullScreenAd extends ApslAdBase {
   final AdUnitType _adUnitType;
   bool _isAdLoaded = false;
-  ApslFacebookFullScreenAd(String adUnitId, this._adUnitType)
-      : assert(
-            _adUnitType == AdUnitType.interstitial ||
-                _adUnitType == AdUnitType.rewarded,
+  bool _preLoadRewardedAds = false;
+
+  ApslFacebookFullScreenAd({
+    required String adUnitId,
+    required AdUnitType adUnitType,
+    bool preLoadRewardedAds = false,
+  })  : assert(
+            adUnitType == AdUnitType.interstitial ||
+                adUnitType == AdUnitType.rewarded,
             'Ad Unit Type must be rewarded or interstitial'),
+        _adUnitType = adUnitType,
+        _preLoadRewardedAds = preLoadRewardedAds,
         super(adUnitId);
 
   @override
@@ -59,7 +66,7 @@ class ApslFacebookFullScreenAd extends ApslAdBase {
       }
       await interstitialAd?.show();
     } else {
-      if (rewardedAd == null) {
+      if (rewardedAd == null && _preLoadRewardedAds) {
         load();
         return;
       }
@@ -72,7 +79,7 @@ class ApslFacebookFullScreenAd extends ApslAdBase {
       onError: (code, value) {
         _isAdLoaded = false;
         onAdFailedToLoad?.call(adNetwork, adUnitType, null,
-            'Error occurred while loading $code $value ad');
+            errorMessage: 'Error occurred while loading $code $value ad');
       },
       onLoaded: () {
         _isAdLoaded = true;
@@ -83,12 +90,12 @@ class ApslFacebookFullScreenAd extends ApslAdBase {
       },
       onLoggingImpression: () {},
       onVideoComplete: () {
-        onEarnedReward?.call(adNetwork, adUnitType, null, null);
+        onEarnedReward?.call(adNetwork, adUnitType, null, rewardAmount: null);
       },
       onVideoClosed: () {
         onAdDismissed?.call(adNetwork, adUnitType, 'Dismissed');
         _isAdLoaded = false;
-        load();
+        if (_preLoadRewardedAds) load();
       },
     );
   }
@@ -98,7 +105,7 @@ class ApslFacebookFullScreenAd extends ApslAdBase {
       onError: (code, value) {
         _isAdLoaded = false;
         onAdFailedToLoad?.call(adNetwork, adUnitType, null,
-            'Error occurred while loading $code $value ad');
+            errorMessage: 'Error occurred while loading $code $value ad');
       },
       onLoaded: () {
         _isAdLoaded = true;

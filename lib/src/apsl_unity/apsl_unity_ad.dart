@@ -6,7 +6,15 @@ import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 class ApslUnityAd extends ApslAdBase {
   final AdUnitType _adUnitType;
   bool _isAdLoaded = false;
-  ApslUnityAd(String adUnitId, this._adUnitType) : super(adUnitId);
+  bool _preLoadRewardedAds = false;
+
+  ApslUnityAd({
+    required String adUnitId,
+    required AdUnitType adUnitType,
+    bool? preLoadRewardedAds,
+  })  : _preLoadRewardedAds = preLoadRewardedAds ?? false,
+        _adUnitType = adUnitType,
+        super(adUnitId);
 
   @override
   AdUnitType get adUnitType => _adUnitType;
@@ -34,8 +42,8 @@ class ApslUnityAd extends ApslAdBase {
   }
 
   @override
-  show() {
-    UnityAds.showVideoAd(
+  show() async {
+    await UnityAds.showVideoAd(
       placementId: adUnitId,
       onStart: onStartUnityAd,
       onClick: onClickUnityAd,
@@ -45,7 +53,6 @@ class ApslUnityAd extends ApslAdBase {
     );
 
     _isAdLoaded = false;
-    load();
   }
 
   void onCompleteLoadUnityAd(String s) {
@@ -57,7 +64,11 @@ class ApslUnityAd extends ApslAdBase {
       String placementId, UnityAdsLoadError error, String errorMessage) {
     _isAdLoaded = false;
     onAdFailedToLoad?.call(
-        adNetwork, adUnitType, error, 'Error occurred while loading unity ad');
+      adNetwork,
+      adUnitType,
+      error,
+      errorMessage: 'Error occurred while loading unity ad',
+    );
   }
 
   void onStartUnityAd(String s) {
@@ -76,9 +87,15 @@ class ApslUnityAd extends ApslAdBase {
   void onCompleteUnityAd(String s) {
     _isAdLoaded = false;
     if (adUnitType == AdUnitType.rewarded) {
-      onEarnedReward?.call(adNetwork, adUnitType, null, null);
+      onEarnedReward?.call(adNetwork, adUnitType, null, rewardAmount: null);
     } else {
       onAdDismissed?.call(adNetwork, adUnitType, null);
+    }
+
+    //dv removed preloading of rewarded ad
+    if (_adUnitType == AdUnitType.interstitial ||
+        (_adUnitType == AdUnitType.rewarded && _preLoadRewardedAds)) {
+      load();
     }
   }
 
@@ -86,6 +103,10 @@ class ApslUnityAd extends ApslAdBase {
       String placementId, UnityAdsShowError error, String errorMessage) {
     _isAdLoaded = false;
     onAdFailedToShow?.call(
-        adNetwork, adUnitType, error, 'Error occurred while loading unity ad');
+      adNetwork,
+      adUnitType,
+      error,
+      errorMessage: 'Error occurred while loading unity ad',
+    );
   }
 }

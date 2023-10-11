@@ -6,6 +6,7 @@ class ApslAdmobNativeAd extends ApslAdBase {
   final AdRequest _adRequest;
   final NativeTemplateStyle? nativeTemplateStyle;
   final TemplateType _templateType;
+  final bool useNativeTemplate = false;
 
   ApslAdmobNativeAd(
     String adUnitId, {
@@ -52,7 +53,12 @@ class ApslAdmobNativeAd extends ApslAdBase {
         onAdFailedToLoad: (ad, error) {
           _isAdLoaded = false;
           _nativeAd = null;
-          onAdFailedToLoad?.call(adNetwork, adUnitType, ad, error.toString());
+          onAdFailedToLoad?.call(
+            adNetwork,
+            adUnitType,
+            ad,
+            errorMessage: error.toString(),
+          );
           ad.dispose();
         },
       ),
@@ -100,16 +106,17 @@ class ApslAdmobNativeAd extends ApslAdBase {
       load();
       return const SizedBox();
     }
+
     return ConstrainedBox(
       constraints: BoxConstraints(
         minWidth: 320,
+        maxWidth: 400,
         // minimum recommended height
         minHeight: _templateType == TemplateType.small ? 90 : 320,
-        maxWidth: 400,
         // maximum recommended height
         maxHeight: _templateType == TemplateType.small ? 200 : 400,
       ),
-      child: AdWidget(ad: _nativeAd!),
+      child: Center(child: AdWidget(ad: _nativeAd!)),
     );
   }
 }

@@ -59,7 +59,13 @@ class _ApslBannerAdState extends State<ApslBannerAd> {
   }
 
   void onBannerAdReadyForSetState(
-      AdNetwork adNetwork, AdUnitType adUnitType, Object? data) {
+    AdNetwork adNetwork,
+    AdUnitType adUnitType,
+    Object? data, {
+    String? errorMessage,
+    String? rewardType,
+    num? rewardAmount,
+  }) {
     setState(() {});
   }
 }

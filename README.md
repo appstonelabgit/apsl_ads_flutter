@@ -1,28 +1,28 @@
 # Apsl Ads Flutter
 
-**Please show some ❤️ to the package, give it a 👍, and ⭐️ the repo to support the project!**
+Easily integrate ads from various ad networks into your Flutter app with `Apsl Ads Flutter`.
 
-Simplify the integration of ads from various ad networks into your Flutter app effortlessly.
+🌟 Please consider giving the package a star on GitHub to support the project.
 
-## Features
+## 🚀 Features
 
-- Google Mobile Ads (banner, appOpen, interstitial, rewarded ad, native ad)
-- Facebook Audience Network (banner, interstitial, rewarded ad, native ad (coming soon))
-- Unity Ads (banner, interstitial, rewarded ad)
+- **Google Mobile Ads**: banner, appOpen, interstitial, rewarded ad, native ad.
+- **Facebook Audience Network**: banner, interstitial, rewarded ad. Native ad is coming soon!
+- **Unity Ads**: banner, interstitial, rewarded ad.
+- **AppLovin**: banner, interstitial, rewarded ad.
 
-## Admob Mediation
-- This plugin offers support for AdMob mediation. [See Details](https://developers.google.com/admob/flutter/mediation/get-started) for the AdMob Mediation Guide.
-- Simply add the native platform settings for AdMob mediation.
+## 📱 AdMob Mediation
 
-## Platform Specific Setup
+- The plugin provides support for AdMob mediation. For more details, refer to the [AdMob Mediation Guide](https://developers.google.com/admob/flutter/mediation/get-started).
+- Ensure you add the native platform settings for AdMob mediation.
+
+## 🛠 Platform Specific Setup
 
 ### iOS
 
-#### Update your Info.plist
+#### 📝 Update your Info.plist
 
-* The key for Google Ads and Applovin **are required** in Info.plist.
-
-Update your app's `ios/Runner/Info.plist` file to add two keys:
+For Google Ads and Applovin, adding specific keys is mandatory. Update your `ios/Runner/Info.plist` as follows:
 
 ```xml
 <key>AppLovinSdkKey</key>
@@ -31,26 +31,23 @@ Update your app's `ios/Runner/Info.plist` file to add two keys:
 <string>YOUR_SDK_KEY</string>
 ```
 
-* You have to add `SKAdNetworkItems` for all networks provided by Apsl-ads-flutter [info.plist](https://github.com/appstonelabgit/apsl_ads_flutter/blob/main/example/ios/Runner/Info.plist) you can copy paste `SKAdNetworkItems` in  your own project.
+Additionally, add `SKAdNetworkItems` for all networks provided by `Apsl-ads-flutter`. You can find and copy the `SKAdNetworkItems` from the provided [info.plist](https://github.com/appstonelabgit/apsl_ads_flutter/blob/main/example/ios/Runner/Info.plist) to your project.
 
 ### Android
 
-#### Update AndroidManifest.xml
+#### 📝 Update AndroidManifest.xml
 
 ```xml
 <manifest>
     <application>
-        <meta-data android:name="applovin.sdk.key"
-            android:value="YOUR_SDK_KEY"/>
-        <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy"/>
+        <meta-data android:name="applovin.sdk.key" android:value="YOUR_SDK_KEY"/>
+        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy"/>
     </application>
 </manifest>
 ```
 
-## Initialize Ad Ids
+## 🧩 Initialize Ad IDs
+This is how you can define and manage your ad IDs for different networks:
 
 ```dart
 import 'dart:io';
@@ -116,9 +113,9 @@ class TestAdsIdManager extends AdsIdManager {
 
 ```
 
-## Initialize the SDK
+## 🚀 SDK Initialization
 
-Before you start showing ads in your app, make sure to initialize the Mobile Ads SDK by calling `ApslAds.instance.initialize()`. This will initialize the SDK and return a `Future` that completes when the initialization is done (or after a 30-second timeout). You only need to do this once, preferably right before running your app.
+Before displaying ads, ensure you initialize the Mobile Ads SDK with `ApslAds.instance.initialize()`. It's a one-time setup, ideally done just before your app starts.
 
 ```dart
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
@@ -137,22 +134,22 @@ ApslAds.instance.initialize(
   );
 ```
 
-## Interstitial/Rewarded Ads
+## 🎥 Interstitial/Rewarded Ads
 
-### Load an ad
-Ad is automatically loaded after being displayed or first time when you call initialize.
-As a safety measure, you can call this method to load both rewarded and interstitial ads.
-If an ad is already loaded, it won't load again.
+### 🔋 Load an ad
+
+By default, an ad loads after being displayed or when you call `initialize` for the first time.
+As a precaution, use the following method to load both rewarded and interstitial ads:
 ```dart
 ApslAds.instance.loadAd();
 ```
 
-### Show interstitial or rewarded ad
+### 📺 Display Interstitial or Rewarded Ad
 ```dart
 ApslAds.instance.showAd(AdUnitType.rewarded);
 ```
 
-### Show appOpen ad
+### 🎉 Display App Open Ad
 ```dart
 ApslAds.instance.showAd(AdUnitType.appOpen)
 ```
@@ -176,15 +173,11 @@ Widget build(BuildContext context) {
 }
 ```
 
-## Show All Banner Ad one by one
+## 🌐 Show All Banner Ads Sequentially
 
-Banners will attempt to load ad networks in the order you provided. If a network fails to load for any reason, it will automatically move on to the next one to prevent revenue loss.
+The banners will attempt to load ads from the networks in the sequence you specify. If one network fails, it will automatically switch to the next one, ensuring minimal revenue loss.
 
-To set the order for All Banner, simply pass the `orderOfAdNetworks` parameter in the `ApslAllBannerAd` constructor like this:
-
-Other wise it will set by default as [admob, facebook, unity] and default AdSize is AdSize.banner,
-
-This is how you may show banner ad in widget-tree somewhere:
+You can specify the order using the `orderOfAdNetworks` parameter in the `ApslAllBannerAd` constructor:
 
 ```dart
 @override
@@ -213,8 +206,9 @@ Widget build(BuildContext context) {
 }
 ```
 
-## Listening to the callbacks
-Declare this object in the class
+## 🔔 Callbacks
+To monitor various ad events, use the callback mechanism:
+
 ```dart
   StreamSubscription? _streamSubscription;
 ```
