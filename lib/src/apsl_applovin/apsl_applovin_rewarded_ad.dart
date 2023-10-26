@@ -1,9 +1,11 @@
 import 'package:applovin_max/applovin_max.dart';
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 
+/// A wrapper class for the AppLovin MAX Rewarded Ad within the `apsl_ads_flutter` package.
 class ApslApplovinRewardedAd extends ApslAdBase {
   ApslApplovinRewardedAd(String adUnitId) : super(adUnitId);
 
+  // Tracks the loaded state of the ad.
   bool _isLoaded = false;
 
   @override
@@ -18,6 +20,7 @@ class ApslApplovinRewardedAd extends ApslAdBase {
   @override
   void dispose() => _isLoaded = false;
 
+  /// Loads the rewarded ad, if not already loaded.
   @override
   Future<void> load() async {
     if (_isLoaded) return;
@@ -26,9 +29,12 @@ class ApslApplovinRewardedAd extends ApslAdBase {
       AppLovinMAX.loadRewardedAd(adUnitId);
       _isLoaded = await AppLovinMAX.isRewardedAdReady(adUnitId) ?? false;
     }
+
+    // Set up the ad event listeners.
     _onAppLovinAdListener();
   }
 
+  /// Displays the rewarded ad if it's loaded.
   @override
   show() {
     if (!_isLoaded) return;
@@ -39,6 +45,7 @@ class ApslApplovinRewardedAd extends ApslAdBase {
     _isLoaded = false;
   }
 
+  /// Initializes the rewarded ad event listeners.
   void _onAppLovinAdListener() {
     AppLovinMAX.setRewardedAdListener(
       RewardedAdListener(
@@ -72,6 +79,7 @@ class ApslApplovinRewardedAd extends ApslAdBase {
         onAdHiddenCallback: (_) {
           onAdDismissed?.call(adNetwork, adUnitType, null);
         },
+        // Handles the reward callback.
         onAdReceivedRewardCallback: (_, __) {
           onEarnedReward?.call(adNetwork, adUnitType, null, rewardAmount: null);
         },

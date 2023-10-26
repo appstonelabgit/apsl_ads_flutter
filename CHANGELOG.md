@@ -1,3 +1,9 @@
+## 1.2.7 
+bug fixes and improvement
+
+## 1.2.6 
+bug fixes and code refactoring in loading insterstitial ads 
+
 ## 1.2.5 
 Added preloadRewarded ad in initialisation method which will help to load rewarded ad at the time of display.
 

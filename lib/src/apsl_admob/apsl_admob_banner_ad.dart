@@ -4,10 +4,16 @@ import 'package:apsl_ads_flutter/src/enums/ad_unit_type.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+/// A class that encapsulates the logic for AdMob's Banner Ads.
 class ApslAdmobBannerAd extends ApslAdBase {
   final AdRequest _adRequest;
-  final AdSize adSize;
+  final AdSize adSize; // Size of the banner ad to be displayed
 
+  /// Constructs an instance of ApslAdmobBannerAd.
+  ///
+  /// [adUnitId] is the ad unit identifier provided by AdMob.
+  /// [adRequest] is an optional request object, defaulting to `AdRequest`.
+  /// [adSize] is the desired size of the banner, defaulting to standard banner size.
   ApslAdmobBannerAd(
     String adUnitId, {
     AdRequest? adRequest,
@@ -23,6 +29,7 @@ class ApslAdmobBannerAd extends ApslAdBase {
   @override
   AdNetwork get adNetwork => AdNetwork.admob;
 
+  /// Disposes the banner ad to release any resources.
   @override
   void dispose() {
     _isAdLoaded = false;
@@ -33,16 +40,19 @@ class ApslAdmobBannerAd extends ApslAdBase {
   @override
   bool get isAdLoaded => _isAdLoaded;
 
+  /// Loads the banner ad.
   @override
   Future<void> load() async {
     await _bannerAd?.dispose();
     _bannerAd = null;
     _isAdLoaded = false;
 
+    // Initializing the BannerAd with appropriate parameters.
     _bannerAd = BannerAd(
       size: adSize,
       adUnitId: adUnitId,
       listener: BannerAdListener(
+        // Handling various ad events.
         onAdLoaded: (Ad ad) {
           _bannerAd = ad as BannerAd?;
           _isAdLoaded = true;
@@ -66,11 +76,14 @@ class ApslAdmobBannerAd extends ApslAdBase {
       ),
       request: _adRequest,
     )..load();
-    // _bannerAd?.load();
   }
 
+  /// Shows the loaded banner ad if available.
+  ///
+  /// Returns a widget that can be embedded in the UI.
   @override
   dynamic show() {
+    // If the ad isn't loaded yet, initiate load and provide a placeholder.
     if (_bannerAd == null || !_isAdLoaded) {
       load();
       return SizedBox(
@@ -79,6 +92,7 @@ class ApslAdmobBannerAd extends ApslAdBase {
       );
     }
 
+    // Return the banner ad widget.
     return Container(
       alignment: Alignment.center,
       height: adSize.height.toDouble(),

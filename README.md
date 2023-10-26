@@ -1,28 +1,44 @@
 # Apsl Ads Flutter
 
-Easily integrate ads from various ad networks into your Flutter app with `Apsl Ads Flutter`.
+Seamlessly integrate ads from multiple ad networks into your Flutter app using the `Apsl Ads Flutter` package. Monetize your Flutter applications effortlessly with our unified approach.
 
-🌟 Please consider giving the package a star on GitHub to support the project.
+🌟 If this package benefits you, show your support by giving it a star on GitHub!
 
 ## 🚀 Features
 
-- **Google Mobile Ads**: banner, appOpen, interstitial, rewarded ad, native ad.
-- **Facebook Audience Network**: banner, interstitial, rewarded ad. Native ad is coming soon!
-- **Unity Ads**: banner, interstitial, rewarded ad.
-- **AppLovin**: banner, interstitial, rewarded ad.
+- **Google Mobile Ads**: 
+   - Banner
+   - AppOpen
+   - Interstitial
+   - Rewarded Ad
+   - Native Ad
+- **Facebook Audience Network**: 
+   - Banner
+   - Interstitial
+   - Rewarded Ad
+   - *Native Ad (Coming Soon!)*
+- **Unity Ads**: 
+   - Banner
+   - Interstitial
+   - Rewarded Ad
+- **AppLovin**: 
+   - Banner
+   - Interstitial
+   - Rewarded Ad
 
 ## 📱 AdMob Mediation
 
-- The plugin provides support for AdMob mediation. For more details, refer to the [AdMob Mediation Guide](https://developers.google.com/admob/flutter/mediation/get-started).
-- Ensure you add the native platform settings for AdMob mediation.
+The plugin offers comprehensive AdMob mediation support. Delve deeper into mediation details:
+- [AdMob Mediation Guide](https://developers.google.com/admob/flutter/mediation/get-started)
+- Remember to configure the native platform settings for AdMob mediation.
 
-## 🛠 Platform Specific Setup
+## 🛠 Platform-Specific Setup
 
 ### iOS
 
 #### 📝 Update your Info.plist
 
-For Google Ads and Applovin, adding specific keys is mandatory. Update your `ios/Runner/Info.plist` as follows:
+For both Google Ads and Applovin, certain keys are essential. Update your `ios/Runner/Info.plist`:
 
 ```xml
 <key>AppLovinSdkKey</key>

@@ -1,26 +1,29 @@
 import 'package:applovin_max/applovin_max.dart';
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 
+/// A class encapsulating the logic for AppLovin MAX's Banner Ads.
 class ApslApplovinBannerAd extends ApslAdBase {
   ApslApplovinBannerAd(String adUnitId) : super(adUnitId);
 
-  bool _isLoaded = false;
+  bool _isLoaded = false; // Flag to check if the banner ad has been loaded
 
+  // Overridden getters
   @override
   AdNetwork get adNetwork => AdNetwork.appLovin;
-
   @override
   AdUnitType get adUnitType => AdUnitType.banner;
-
-  @override
-  void dispose() => _isLoaded = false;
-
   @override
   bool get isAdLoaded => _isLoaded;
 
+  /// Updates the state of the ad to not loaded when disposed.
+  @override
+  void dispose() => _isLoaded = false;
+
+  /// Currently, this method does not seem to have a load implementation.
   @override
   Future<void> load() async {}
 
+  /// Shows or initializes the MaxAdView which is AppLovin's banner ad view.
   @override
   show() {
     return MaxAdView(

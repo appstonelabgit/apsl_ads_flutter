@@ -12,22 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// ignore_for_file: public_member_api_docs
 import 'package:apsl_ads_flutter/src/apsl_admob/apsl_admob_app_open_ad.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-/// Listens for app foreground events and shows app open ads.
+/// Manages the app lifecycle to display app open ads.
+/// It listens to app state changes and triggers the ad display whenever
+/// the app comes to the foreground.
 class AppLifecycleReactor {
+  // Reference to the manager handling app open ads for AdMob.
   final ApslAdmobAppOpenAd appOpenAdManager;
 
+  /// Constructs the lifecycle reactor with a provided [appOpenAdManager].
   AppLifecycleReactor({required this.appOpenAdManager});
 
+  /// Initiates the listener for app state changes.
   void listenToAppStateChanges() {
     AppStateEventNotifier.startListening();
     AppStateEventNotifier.appStateStream
         .forEach((state) => _onAppStateChanged(state));
   }
 
+  /// Internal handler for app state changes.
+  /// Triggers ad display when the app transitions to the foreground.
   void _onAppStateChanged(AppState appState) {
     if (appState == AppState.foreground) {
       appOpenAdManager.show();

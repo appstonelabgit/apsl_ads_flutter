@@ -5,7 +5,9 @@ import 'package:easy_audience_network/ad/banner_ad.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart' as admob;
 
+/// A wrapper class for the Facebook Audience Network Banner Ad within the `apsl_ads_flutter` package.
 class ApslFacebookBannerAd extends ApslAdBase {
+  /// The size of the AdMob ad.
   final admob.AdSize? adSize;
 
   ApslFacebookBannerAd(
@@ -13,10 +15,12 @@ class ApslFacebookBannerAd extends ApslAdBase {
     this.adSize = admob.AdSize.banner,
   }) : super(adUnitId);
 
+  // Tracks the loaded state of the ad.
   bool _isAdLoaded = false;
 
   @override
   AdUnitType get adUnitType => AdUnitType.banner;
+
   @override
   AdNetwork get adNetwork => AdNetwork.facebook;
 
@@ -31,6 +35,7 @@ class ApslFacebookBannerAd extends ApslAdBase {
   @override
   Future<void> load() async {}
 
+  /// Displays the Facebook Banner ad wrapped in a container.
   @override
   dynamic show() {
     final bannerSize = adSize == null
@@ -48,6 +53,7 @@ class ApslFacebookBannerAd extends ApslAdBase {
     );
   }
 
+  /// Handles the ad events like loading, clicking, and errors.
   BannerAdListener? _onAdListener() {
     return BannerAdListener(
       onLoggingImpression: () {},

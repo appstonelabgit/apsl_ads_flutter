@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-
 import '../../apsl_ads_flutter.dart';
 
+/// A class encapsulating the logic for AdMob's Native Ads.
 class ApslAdmobNativeAd extends ApslAdBase {
   final AdRequest _adRequest;
   final NativeTemplateStyle? nativeTemplateStyle;
   final TemplateType _templateType;
   final bool useNativeTemplate = false;
 
+  /// Constructor for creating an instance of ApslAdmobNativeAd.
   ApslAdmobNativeAd(
     String adUnitId, {
     AdRequest? adRequest,
@@ -17,14 +18,16 @@ class ApslAdmobNativeAd extends ApslAdBase {
         _templateType = templateType ?? TemplateType.medium,
         super(adUnitId);
 
-  NativeAd? _nativeAd;
-  bool _isAdLoaded = false;
+  NativeAd? _nativeAd; // Reference to the loaded native ad
+  bool _isAdLoaded = false; // Flag to check if the ad has been loaded
 
+  // Overridden getters
   @override
   AdUnitType get adUnitType => AdUnitType.native;
   @override
   AdNetwork get adNetwork => AdNetwork.admob;
 
+  /// Disposes the native ad to release any resources.
   @override
   void dispose() {
     _isAdLoaded = false;
@@ -35,6 +38,7 @@ class ApslAdmobNativeAd extends ApslAdBase {
   @override
   bool get isAdLoaded => _isAdLoaded;
 
+  /// Loads the native ad.
   @override
   Future<void> load() async {
     await _nativeAd?.dispose();
@@ -44,6 +48,7 @@ class ApslAdmobNativeAd extends ApslAdBase {
     _nativeAd = NativeAd(
       adUnitId: adUnitId,
       listener: NativeAdListener(
+        // Callbacks to handle ad events
         onAdLoaded: (ad) {
           _isAdLoaded = true;
           _nativeAd = ad as NativeAd?;
@@ -67,11 +72,10 @@ class ApslAdmobNativeAd extends ApslAdBase {
     )..load();
   }
 
+  /// Provides a default template style for the ad.
   NativeTemplateStyle getTemplate() {
     return NativeTemplateStyle(
-      // Required: Choose a template.
       templateType: _templateType,
-      // Optional: Customize the ad's style.
       mainBackgroundColor: Colors.transparent,
       cornerRadius: 10.0,
       callToActionTextStyle: NativeTemplateTextStyle(
@@ -87,7 +91,6 @@ class ApslAdmobNativeAd extends ApslAdBase {
       ),
       secondaryTextStyle: NativeTemplateTextStyle(
         textColor: Colors.black,
-        // backgroundColor: Colors.white,
         style: NativeTemplateFontStyle.bold,
         size: 16.0,
       ),
@@ -100,6 +103,7 @@ class ApslAdmobNativeAd extends ApslAdBase {
     );
   }
 
+  /// Displays the loaded native ad.
   @override
   show() {
     if (_nativeAd == null && !_isAdLoaded) {
@@ -111,9 +115,7 @@ class ApslAdmobNativeAd extends ApslAdBase {
       constraints: BoxConstraints(
         minWidth: 320,
         maxWidth: 400,
-        // minimum recommended height
         minHeight: _templateType == TemplateType.small ? 90 : 320,
-        // maximum recommended height
         maxHeight: _templateType == TemplateType.small ? 200 : 400,
       ),
       child: Center(child: AdWidget(ad: _nativeAd!)),

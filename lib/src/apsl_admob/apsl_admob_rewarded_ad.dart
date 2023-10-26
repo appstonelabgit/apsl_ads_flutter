@@ -3,11 +3,13 @@ import 'package:apsl_ads_flutter/src/enums/ad_network.dart';
 import 'package:apsl_ads_flutter/src/enums/ad_unit_type.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+/// A class encapsulating the logic for AdMob's Rewarded Ads.
 class ApslAdmobRewardedAd extends ApslAdBase {
   final AdRequest _adRequest;
   final bool _immersiveModeEnabled;
   final bool _preLoadRewardedAds;
 
+  /// Constructor for creating an instance of ApslAdmobRewardedAd.
   ApslAdmobRewardedAd({
     required String adUnitId,
     required AdRequest adRequest,
@@ -18,18 +20,18 @@ class ApslAdmobRewardedAd extends ApslAdBase {
         _preLoadRewardedAds = preLoadRewardedAds,
         super(adUnitId);
 
-  RewardedAd? _rewardedAd;
-  bool _isAdLoaded = false;
+  RewardedAd? _rewardedAd; // Reference to the loaded rewarded ad
+  bool _isAdLoaded = false; // Flag to check if the ad has been loaded
 
+  // Overridden getters
   @override
   AdNetwork get adNetwork => AdNetwork.admob;
-
   @override
   AdUnitType get adUnitType => AdUnitType.rewarded;
-
   @override
   bool get isAdLoaded => _isAdLoaded;
 
+  /// Disposes the rewarded ad to release any resources.
   @override
   void dispose() {
     _isAdLoaded = false;
@@ -37,6 +39,7 @@ class ApslAdmobRewardedAd extends ApslAdBase {
     _rewardedAd = null;
   }
 
+  /// Loads the rewarded ad.
   @override
   Future<void> load() async {
     if (_isAdLoaded) return;
@@ -60,6 +63,7 @@ class ApslAdmobRewardedAd extends ApslAdBase {
         }));
   }
 
+  /// Displays the loaded rewarded ad.
   @override
   dynamic show() {
     final ad = _rewardedAd;
@@ -73,7 +77,7 @@ class ApslAdmobRewardedAd extends ApslAdBase {
         onAdDismissed?.call(adNetwork, adUnitType, ad);
 
         ad.dispose();
-        if (_preLoadRewardedAds) load(); //dv removed preloading of rewarded ad
+        if (_preLoadRewardedAds) load(); // Option to preload the next ad
       },
       onAdFailedToShowFullScreenContent: (RewardedAd ad, AdError error) {
         onAdFailedToShow?.call(
@@ -84,7 +88,7 @@ class ApslAdmobRewardedAd extends ApslAdBase {
         );
 
         ad.dispose();
-        if (_preLoadRewardedAds) load(); //dv removed preloading of rewarded ad
+        if (_preLoadRewardedAds) load(); // Option to preload the next ad
       },
     );
 
