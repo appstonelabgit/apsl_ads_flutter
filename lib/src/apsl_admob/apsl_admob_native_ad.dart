@@ -10,13 +10,12 @@ class ApslAdmobNativeAd extends ApslAdBase {
 
   /// Constructor for creating an instance of ApslAdmobNativeAd.
   ApslAdmobNativeAd(
-    String adUnitId, {
+    super.adUnitId, {
     AdRequest? adRequest,
     this.nativeTemplateStyle,
     TemplateType? templateType,
   })  : _adRequest = adRequest ?? const AdRequest(),
-        _templateType = templateType ?? TemplateType.medium,
-        super(adUnitId);
+        _templateType = templateType ?? TemplateType.medium;
 
   NativeAd? _nativeAd; // Reference to the loaded native ad
   bool _isAdLoaded = false; // Flag to check if the ad has been loaded

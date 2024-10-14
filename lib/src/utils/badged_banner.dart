@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 class BadgedBanner extends StatelessWidget {
   final Widget? child;
   final AdSize adSize;
-  const BadgedBanner({this.child, this.adSize = AdSize.banner, Key? key})
-      : super(key: key);
+  const BadgedBanner({this.child, this.adSize = AdSize.banner, super.key});
 
   @override
   Widget build(BuildContext context) {

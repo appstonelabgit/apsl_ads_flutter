@@ -86,11 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () => _showAd(AdUnitType.interstitial,
                     adNetwork: AdNetwork.unity),
               ),
-              AdListTile(
-                networkName: 'AppLovin Interstitial',
-                onTap: () => _showAd(AdUnitType.interstitial,
-                    adNetwork: AdNetwork.appLovin),
-              ),
+
               AdListTile(
                 networkName: 'Show Interstitial one by one',
                 onTap: () => _showAd(AdUnitType.interstitial),
@@ -117,11 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () =>
                     _loadAndShowRewardedAds(adNetwork: AdNetwork.unity),
               ),
-              AdListTile(
-                networkName: 'AppLovin Rewarded',
-                onTap: () =>
-                    _loadAndShowRewardedAds(adNetwork: AdNetwork.appLovin),
-              ),
+
               AdListTile(
                 networkName: 'Show Rewarded one by one',
                 onTap: () => _loadAndShowRewardedAds(adNetwork: AdNetwork.any),

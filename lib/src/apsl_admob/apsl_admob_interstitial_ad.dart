@@ -11,10 +11,10 @@ class ApslAdmobInterstitialAd extends ApslAdBase {
 
   /// Constructor for creating an instance of ApslAdmobInterstitialAd.
   ApslAdmobInterstitialAd(
-    String adUnitId,
+    super.adUnitId,
     this._adRequest,
     this._immersiveModeEnabled,
-  ) : super(adUnitId);
+  );
 
   InterstitialAd? _interstitialAd; // Reference to the loaded interstitial ad
   bool _isAdLoaded = false; // Flag to check if the ad has been loaded
@@ -40,8 +40,9 @@ class ApslAdmobInterstitialAd extends ApslAdBase {
   /// Loads the interstitial ad.
   @override
   Future<void> load() async {
-    if (_isAdLoaded)
+    if (_isAdLoaded) {
       return; // If the ad is already loaded, don't attempt to reload
+    }
 
     // Load the interstitial ad
     await InterstitialAd.load(

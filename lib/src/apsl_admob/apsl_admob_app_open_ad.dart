@@ -3,7 +3,6 @@ import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 /// A class that encapsulates the logic for AdMob's App Open Ads.
 class ApslAdmobAppOpenAd extends ApslAdBase {
   final AdRequest _adRequest;
-  final int _orientation;
   AppOpenAd? _appOpenAd;
   bool _isShowingAd = false;
 
@@ -13,7 +12,7 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
   /// Timestamp to keep track when the ad was loaded.
   DateTime? _appOpenLoadTime;
 
-  ApslAdmobAppOpenAd(super.adUnitId, this._adRequest, this._orientation);
+  ApslAdmobAppOpenAd(super.adUnitId, this._adRequest);
 
   @override
   AdNetwork get adNetwork => AdNetwork.admob;
@@ -36,13 +35,12 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
   Future<void> load() => _load();
 
   /// Internal method to load an ad. If [showAdOnLoad] is true, it will show the ad immediately after loading.
-  Future<void> _load({bool showAdOnLoad = false}) {
+  Future<void> _load({bool showAdOnLoad = true}) {
     if (isAdLoaded) return Future.value();
 
     return AppOpenAd.load(
       adUnitId: adUnitId,
       request: _adRequest,
-      orientation: _orientation,
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (AppOpenAd ad) {
           _appOpenLoadTime = DateTime.now();

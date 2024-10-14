@@ -6,29 +6,26 @@ Seamlessly integrate ads from multiple ad networks into your Flutter app using t
 
 ## 🚀 Features
 
-- **Google Mobile Ads**: 
-   - Banner
-   - AppOpen
-   - Interstitial
-   - Rewarded Ad
-   - Native Ad
-- **Facebook Audience Network**: 
-   - Banner
-   - Interstitial
-   - Rewarded Ad
-   - *Native Ad (Coming Soon!)*
-- **Unity Ads**: 
-   - Banner
-   - Interstitial
-   - Rewarded Ad
-- **AppLovin**: 
-   - Banner
-   - Interstitial
-   - Rewarded Ad
+- **Google Mobile Ads**:
+  - Banner
+  - AppOpen
+  - Interstitial
+  - Rewarded Ad
+  - Native Ad
+- **Facebook Audience Network**:
+  - Banner
+  - Interstitial
+  - Rewarded Ad
+  - *Native Ad (Coming Soon!)*
+- **Unity Ads**:
+  - Banner
+  - Interstitial
+  - Rewarded Ad
 
 ## 📱 AdMob Mediation
 
 The plugin offers comprehensive AdMob mediation support. Delve deeper into mediation details:
+
 - [AdMob Mediation Guide](https://developers.google.com/admob/flutter/mediation/get-started)
 - Remember to configure the native platform settings for AdMob mediation.
 
@@ -41,8 +38,7 @@ The plugin offers comprehensive AdMob mediation support. Delve deeper into media
 For both Google Ads and Applovin, certain keys are essential. Update your `ios/Runner/Info.plist`:
 
 ```xml
-<key>AppLovinSdkKey</key>
-<string>YOUR_SDK_KEY</string>
+
 <key>GADApplicationIdentifier</key>
 <string>YOUR_SDK_KEY</string>
 ```
@@ -56,13 +52,13 @@ Additionally, add `SKAdNetworkItems` for all networks provided by `Apsl-ads-flut
 ```xml
 <manifest>
     <application>
-        <meta-data android:name="applovin.sdk.key" android:value="YOUR_SDK_KEY"/>
         <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy"/>
     </application>
 </manifest>
 ```
 
 ## 🧩 Initialize Ad IDs
+
 This is how you can define and manage your ad IDs for different networks:
 
 ```dart
@@ -111,19 +107,7 @@ class TestAdsIdManager extends AdsIdManager {
           bannerId: 'IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID',
           rewardedId: 'VID_HD_16_9_46S_APP_INSTALL#YOUR_PLACEMENT_ID',
         ),
-        AppAdIds(
-          adNetwork: 'applovin',
-          appId: 'YOUR_SDK_KEY',
-          bannerId: Platform.isAndroid
-              ? 'ANDROID_BANNER_AD_UNIT_ID'
-              : 'IOS_BANNER_AD_UNIT_ID',
-          interstitialId: Platform.isAndroid
-              ? 'ANDROID_INTER_AD_UNIT_ID'
-              : 'IOS_INTER_AD_UNIT_ID',
-          rewardedId: Platform.isAndroid
-              ? 'ANDROID_REWARDED_AD_UNIT_ID'
-              : 'IOS_REWARDED_AD_UNIT_ID',
-        ),
+       
       ];
 }
 
@@ -142,8 +126,7 @@ const IAdIdManager adIdManager = TestAdIdManager();
 ApslAds.instance.initialize(
     adIdManager,
     adMobAdRequest: const AdRequest(),
-    // Set this to true if you want to restrict ads for applovin (age below 16 years)
-    isAgeRestrictedUserForApplovin:true,
+  
     // To enable Facebook Test mode ads
     fbTestMode: true,
     admobConfiguration: RequestConfiguration(testDeviceIds: []),
@@ -156,16 +139,19 @@ ApslAds.instance.initialize(
 
 By default, an ad loads after being displayed or when you call `initialize` for the first time.
 As a precaution, use the following method to load both rewarded and interstitial ads:
+
 ```dart
 ApslAds.instance.loadAd();
 ```
 
 ### 📺 Display Interstitial or Rewarded Ad
+
 ```dart
 ApslAds.instance.showAd(AdUnitType.rewarded);
 ```
 
 ### 🎉 Display App Open Ad
+
 ```dart
 ApslAds.instance.showAd(AdUnitType.appOpen)
 ```
@@ -210,7 +196,6 @@ Widget build(BuildContext context) {
             AdNetwork.facebook,
             AdNetwork.admob,
             AdNetwork.unity,
-            AdNetwork.applovin,
           ],
           adSize: AdSize.largeBanner,
           // Other parameters...
@@ -223,6 +208,7 @@ Widget build(BuildContext context) {
 ```
 
 ## 🔔 Callbacks
+
 To monitor various ad events, use the callback mechanism:
 
 ```dart
@@ -232,6 +218,7 @@ To monitor various ad events, use the callback mechanism:
 The following code snippet demonstrates the process of displaying an interstitial ad and checking if it has been shown:
 If `true`, we are canceling the subscribed callbacks, if any.
 Then, we are listening to the Stream and accessing the particular event we need
+
 ```dart
 if (ApslAds.instance.showInterstitialAd()) {
   // Canceling the last callback subscribed

@@ -15,11 +15,10 @@ class ApslAdmobBannerAd extends ApslAdBase {
   /// [adRequest] is an optional request object, defaulting to `AdRequest`.
   /// [adSize] is the desired size of the banner, defaulting to standard banner size.
   ApslAdmobBannerAd(
-    String adUnitId, {
+    super.adUnitId, {
     AdRequest? adRequest,
     this.adSize = AdSize.banner,
-  })  : _adRequest = adRequest ?? const AdRequest(),
-        super(adUnitId);
+  }) : _adRequest = adRequest ?? const AdRequest();
 
   BannerAd? _bannerAd;
   bool _isAdLoaded = false;
