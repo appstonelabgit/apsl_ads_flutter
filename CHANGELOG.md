@@ -1,3 +1,7 @@
+## 1.2.9
+
+bug fixes and improvement
+
 ## 1.2.8
 
 Support latest libraries

@@ -35,7 +35,7 @@ The plugin offers comprehensive AdMob mediation support. Delve deeper into media
 
 #### 📝 Update your Info.plist
 
-For both Google Ads and Applovin, certain keys are essential. Update your `ios/Runner/Info.plist`:
+For Google Ads, certain keys are essential. Update your `ios/Runner/Info.plist`:
 
 ```xml
 

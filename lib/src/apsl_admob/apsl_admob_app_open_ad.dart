@@ -35,7 +35,7 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
   Future<void> load() => _load();
 
   /// Internal method to load an ad. If [showAdOnLoad] is true, it will show the ad immediately after loading.
-  Future<void> _load({bool showAdOnLoad = true}) {
+  Future<void> _load({bool showAdOnLoad = false}) {
     if (isAdLoaded) return Future.value();
 
     return AppOpenAd.load(
