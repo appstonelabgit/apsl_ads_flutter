@@ -7,6 +7,8 @@ class ApslAdmobNativeAd extends ApslAdBase {
   final NativeTemplateStyle? nativeTemplateStyle;
   final TemplateType _templateType;
   final bool useNativeTemplate = false;
+  final Color? nativeAdBorderColor;
+  final double? nativeAdBorderRadius;
 
   /// Constructor for creating an instance of ApslAdmobNativeAd.
   ApslAdmobNativeAd(
@@ -14,6 +16,8 @@ class ApslAdmobNativeAd extends ApslAdBase {
     AdRequest? adRequest,
     this.nativeTemplateStyle,
     TemplateType? templateType,
+    this.nativeAdBorderColor,
+    this.nativeAdBorderRadius,
   })  : _adRequest = adRequest ?? const AdRequest(),
         _templateType = templateType ?? TemplateType.medium;
 
@@ -117,7 +121,27 @@ class ApslAdmobNativeAd extends ApslAdBase {
         minHeight: _templateType == TemplateType.small ? 90 : 320,
         maxHeight: _templateType == TemplateType.small ? 200 : 400,
       ),
-      child: Center(child: AdWidget(ad: _nativeAd!)),
+      child: Center(
+          child: Stack(
+        children: [
+          ((nativeAdBorderRadius ?? 0.0) > 0.0)
+              ? ClipRRect(
+                  borderRadius:
+                      BorderRadius.circular(nativeAdBorderRadius ?? 0.0),
+                  child: AdWidget(ad: _nativeAd!),
+                )
+              : AdWidget(ad: _nativeAd!),
+          if ((nativeAdBorderRadius ?? 0.0) > 0.0)
+            Container(
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.circular(nativeAdBorderRadius ?? 0.0),
+                border: Border.all(
+                    color: nativeAdBorderColor ?? Colors.transparent),
+              ),
+            ),
+        ],
+      )),
     );
   }
 }

@@ -32,7 +32,7 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
 
   /// Initiates the loading of the ad.
   @override
-  Future<void> load() => _load();
+  Future<void> load() => _load(showAdOnLoad: true);
 
   /// Internal method to load an ad. If [showAdOnLoad] is true, it will show the ad immediately after loading.
   Future<void> _load({bool showAdOnLoad = false}) {

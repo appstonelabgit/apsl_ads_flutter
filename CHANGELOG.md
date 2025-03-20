@@ -1,3 +1,15 @@
+## 1.2.12
+
+ads destroyer added to remove ads
+
+## 1.2.11
+
+native ads border radius customization added
+
+## 1.2.10
+
+navigation ads improvements
+
 ## 1.2.9
 
 bug fixes and improvement

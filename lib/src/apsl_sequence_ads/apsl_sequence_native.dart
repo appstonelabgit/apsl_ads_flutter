@@ -7,15 +7,19 @@ class ApslSequenceNativeAd extends StatefulWidget {
   final List<AdNetwork> orderOfAdNetworks;
   final NativeTemplateStyle? nativeTemplateStyle;
   final TemplateType? templateType;
+  final Color? nativeAdBorderColor;
+  final double? nativeAdBorderRadius;
   const ApslSequenceNativeAd({
-    Key? key,
+    super.key,
     this.nativeTemplateStyle,
     this.templateType,
     this.orderOfAdNetworks = const [
       AdNetwork.admob,
       AdNetwork.facebook,
     ],
-  }) : super(key: key);
+    this.nativeAdBorderColor,
+    this.nativeAdBorderRadius,
+  });
 
   @override
   State<ApslSequenceNativeAd> createState() => _ApslSequenceNativeAdState();
@@ -85,6 +89,8 @@ class _ApslSequenceNativeAdState extends State<ApslSequenceNativeAd> {
       adNetwork: priorityAdNetwork,
       nativeTemplateStyle: widget.nativeTemplateStyle,
       templateType: widget.templateType,
+      nativeAdBorderColor: widget.nativeAdBorderColor,
+      nativeAdBorderRadius: widget.nativeAdBorderRadius,
     );
   }
 

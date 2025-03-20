@@ -61,13 +61,24 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              ElevatedButton(
+                  onPressed: () async {
+                    ApslAds.instance.destroyAds();
+
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  },
+                  child: const Text("Destroy")),
               _sectionTitleWidget(context, title: 'App Open'),
               AdListTile(
                 networkName: 'Admob AppOpen',
                 onTap: () =>
                     _showAd(AdUnitType.appOpen, adNetwork: AdNetwork.admob),
               ),
-              const ApslSequenceNativeAd(templateType: TemplateType.small),
+              const ApslSequenceNativeAd(
+                templateType: TemplateType.small,
+              ),
               const Divider(thickness: 2),
               // Interstitial Ads Section
               _sectionTitleWidget(context, title: 'Interstitial'),

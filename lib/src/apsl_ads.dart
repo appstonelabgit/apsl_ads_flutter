@@ -28,7 +28,8 @@ class ApslAds {
   final _eventController = ApslEventController();
   Stream<AdEvent> get onEvent => _eventController.onEvent;
 
-  List<ApslAdBase> get _allAds => [..._interstitialAds, ..._rewardedAds];
+  List<ApslAdBase> get _allAds =>
+      [..._interstitialAds, ..._rewardedAds, ..._appOpenAds];
 
   /// All the App Open Ads ads will be stored in it
   final List<ApslAdBase> _appOpenAds = [];
@@ -198,6 +199,8 @@ class ApslAds {
     required AdNetwork adNetwork,
     NativeTemplateStyle? nativeTemplateStyle,
     TemplateType? templateType,
+    Color? nativeAdBorderColor,
+    double? nativeAdBorderRadius,
   }) {
     ApslAdBase? ad;
     final nativeId = adIdManager.getAppIds(adNetwork).nativeId;
@@ -211,6 +214,8 @@ class ApslAds {
             nativeId,
             nativeTemplateStyle: nativeTemplateStyle,
             templateType: templateType,
+            nativeAdBorderColor: nativeAdBorderColor,
+            nativeAdBorderRadius: nativeAdBorderRadius,
           );
         }
         break;
@@ -285,7 +290,11 @@ class ApslAds {
           appOpenAdUnitId,
         )) {
       final appOpenAdManager = ApslAdmobAppOpenAd(appOpenAdUnitId, _adRequest);
-      await appOpenAdManager.load();
+
+      if (_appOpenAds.isEmpty) {
+        await appOpenAdManager.load();
+      }
+
       if (isShowAppOpenOnAppStateChange) {
         _appLifecycleReactor =
             AppLifecycleReactor(appOpenAdManager: appOpenAdManager);
@@ -596,13 +605,17 @@ class ApslAds {
         e.dispose();
       }
     }
+    _appOpenAds.clear();
+    _interstitialAds.clear();
+    _rewardedAds.clear();
   }
 
   /// This method is used to show navigation ad after every [showNavigationAdAfterCount] navigation
   /// if [showNavigationAdAfterCount] is not provided, it will show ad after every 1 navigation
   /// This will only show interstitial ad
   bool showAdOnNavigation() {
-    if (_navigationCount % (_showNavigationAdAfterCount) == 0) {
+    if ((_navigationCount % (_showNavigationAdAfterCount) == 0) &&
+        _navigationCount > 0) {
       _navigationCount++;
       return showAd(AdUnitType.interstitial);
     } else {

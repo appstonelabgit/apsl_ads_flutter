@@ -5,13 +5,17 @@ class ApslNativeAd extends StatefulWidget {
   final AdNetwork adNetwork;
   final NativeTemplateStyle? nativeTemplateStyle;
   final TemplateType? templateType;
+  final Color? nativeAdBorderColor;
+  final double? nativeAdBorderRadius;
 
   const ApslNativeAd({
     this.adNetwork = AdNetwork.admob,
     this.nativeTemplateStyle,
     this.templateType,
-    Key? key,
-  }) : super(key: key);
+    this.nativeAdBorderColor,
+    this.nativeAdBorderRadius,
+    super.key,
+  });
 
   @override
   State<ApslNativeAd> createState() => _ApslNativeAdState();
@@ -44,6 +48,8 @@ class _ApslNativeAdState extends State<ApslNativeAd> {
       adNetwork: widget.adNetwork,
       nativeTemplateStyle: widget.nativeTemplateStyle,
       templateType: widget.templateType,
+      nativeAdBorderColor: widget.nativeAdBorderColor,
+      nativeAdBorderRadius: widget.nativeAdBorderRadius,
     );
     _nativeAd?.load();
   }
