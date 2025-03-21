@@ -6,6 +6,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 const AdsIdManager adIdManager = TestAdsIdManager();
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ApslAds.instance.initialize(

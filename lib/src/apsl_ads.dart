@@ -289,6 +289,7 @@ class ApslAds {
           AdUnitType.appOpen,
           appOpenAdUnitId,
         )) {
+      if (forceStopToLoadAds) return;
       final appOpenAdManager = ApslAdmobAppOpenAd(appOpenAdUnitId, _adRequest);
 
       if (_appOpenAds.isEmpty) {
@@ -608,6 +609,7 @@ class ApslAds {
     _appOpenAds.clear();
     _interstitialAds.clear();
     _rewardedAds.clear();
+    forceStopToLoadAds = true;
   }
 
   /// This method is used to show navigation ad after every [showNavigationAdAfterCount] navigation

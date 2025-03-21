@@ -36,7 +36,7 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
 
   /// Internal method to load an ad. If [showAdOnLoad] is true, it will show the ad immediately after loading.
   Future<void> _load({bool showAdOnLoad = false}) {
-    if (isAdLoaded) return Future.value();
+    if (isAdLoaded || forceStopToLoadAds) return Future.value();
 
     return AppOpenAd.load(
       adUnitId: adUnitId,
@@ -87,6 +87,8 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
     // Define the full screen content callbacks for the ad.
     _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (AppOpenAd ad) {
+        print("MB : onAdShowedFullScreenContent");
+
         _isShowingAd = true;
         onAdShowed?.call(adNetwork, adUnitType, ad);
       },
@@ -104,6 +106,7 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
         _appOpenAd = null;
       },
     );
+    print("MB : Came to show appOpenAdIds");
 
     // Display the ad.
     _appOpenAd?.show();

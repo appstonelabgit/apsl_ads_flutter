@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import 'package:apsl_ads_flutter/src/apsl_admob/apsl_admob_app_open_ad.dart';
+import 'package:apsl_ads_flutter/src/utils/test_ads_id_manager.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 /// Manages the app lifecycle to display app open ads.
@@ -36,6 +37,7 @@ class AppLifecycleReactor {
   /// Triggers ad display when the app transitions to the foreground.
   void _onAppStateChanged(AppState appState) {
     if (appState == AppState.foreground) {
+      if (forceStopToLoadAds) return;
       appOpenAdManager.show();
     }
   }

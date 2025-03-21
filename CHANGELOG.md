@@ -1,3 +1,7 @@
+## 1.2.13
+
+Refactored the code for the app open ads implementation.
+
 ## 1.2.12
 
 ads destroyer added to remove ads

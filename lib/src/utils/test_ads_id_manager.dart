@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'ads_id_manager.dart';
 
+bool forceStopToLoadAds = false;
+
 class TestAdsIdManager extends AdsIdManager {
   const TestAdsIdManager();
 
@@ -14,7 +16,7 @@ class TestAdsIdManager extends AdsIdManager {
               : 'ca-app-pub-3940256099942544~1458002511',
           appOpenId: Platform.isAndroid
               ? 'ca-app-pub-3940256099942544/3419835294'
-              : 'ca-app-pub-3940256099942544/5662855259',
+              : 'ca-app-pub-3940256099942544/5575463023',
           bannerId: Platform.isAndroid
               ? 'ca-app-pub-3940256099942544/6300978111'
               : 'ca-app-pub-3940256099942544/2934735716',
