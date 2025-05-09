@@ -10,7 +10,7 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
-  collection: 
+  collection: ^1.19.1
   easy_audience_network: ^0.0.7
   flutter:
     sdk: flutter
