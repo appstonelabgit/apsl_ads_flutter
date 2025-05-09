@@ -59,6 +59,7 @@ class ApslAds {
 
   /// [_isMobileAdNetworkInitialized] is used to check if admob is initialized or not
   bool _isMobileAdNetworkInitialized = false;
+  bool _hideAppOpenAdWhileAppInstall = false;
 
   StreamSubscription? _streamSubscription;
 
@@ -80,17 +81,21 @@ class ApslAds {
     bool showAdBadge = false,
     int showNavigationAdAfterCount = 1,
     bool preloadRewardedAds = false,
+    bool hideAppOpenAdWhileAppInstall = false,
   }) async {
     _showAdBadge = showAdBadge;
     _showNavigationAdAfterCount = showNavigationAdAfterCount;
     _preLoadRewardedAds = preloadRewardedAds;
+    _hideAppOpenAdWhileAppInstall = hideAppOpenAdWhileAppInstall;
     if (enableLogger) _logger.enable(enableLogger);
     adIdManager = manager;
     if (adMobAdRequest != null) {
       _adRequest = adMobAdRequest;
     }
     // Load SharedPreferences
-    SharedPrefHelper.initialLoad();
+    if (_hideAppOpenAdWhileAppInstall) {
+      SharedPrefHelper.initialLoad();
+    }
 
     if (admobConfiguration != null) {
       MobileAds.instance.updateRequestConfiguration(admobConfiguration);
@@ -293,7 +298,7 @@ class ApslAds {
           appOpenAdUnitId,
         )) {
       if (forceStopToLoadAds) return;
-      final appOpenAdManager = ApslAdmobAppOpenAd(appOpenAdUnitId, _adRequest);
+      final appOpenAdManager = ApslAdmobAppOpenAd(appOpenAdUnitId, _adRequest , _hideAppOpenAdWhileAppInstall);
 
       if (_appOpenAds.isEmpty) {
         await appOpenAdManager.load();

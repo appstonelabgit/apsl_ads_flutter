@@ -6,6 +6,7 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
   final AdRequest _adRequest;
   AppOpenAd? _appOpenAd;
   bool _isShowingAd = false;
+  final bool _hideAppOpenAdWhileAppInstall;
 
   /// Maximum time duration allowed between loading and showing the ad.
   final Duration maxCacheDuration = const Duration(hours: 4);
@@ -13,7 +14,8 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
   /// Timestamp to keep track when the ad was loaded.
   DateTime? _appOpenLoadTime;
 
-  ApslAdmobAppOpenAd(super.adUnitId, this._adRequest);
+  ApslAdmobAppOpenAd(
+      super.adUnitId, this._adRequest, this._hideAppOpenAdWhileAppInstall);
 
   @override
   AdNetwork get adNetwork => AdNetwork.admob;
@@ -38,7 +40,8 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
   /// Internal method to load an ad. If [showAdOnLoad] is true, it will show the ad immediately after loading.
   Future<void> _load({bool showAdOnLoad = false}) {
     // Handle first app open logic
-    if (SharedPrefHelper.getIsAppOpensFirstTime) {
+    if (_hideAppOpenAdWhileAppInstall &&
+        SharedPrefHelper.getIsAppOpensFirstTime) {
       SharedPrefHelper.setAppOpensFirstTimeStatus(false);
       return Future.value();
     }
