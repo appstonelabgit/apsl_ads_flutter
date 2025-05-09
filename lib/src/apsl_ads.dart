@@ -10,6 +10,7 @@ import 'package:apsl_ads_flutter/src/utils/apsl_event_controller.dart';
 import 'package:apsl_ads_flutter/src/utils/apsl_logger.dart';
 import 'package:apsl_ads_flutter/src/utils/auto_hiding_loader_dialog.dart';
 import 'package:apsl_ads_flutter/src/utils/extensions.dart';
+import 'package:apsl_ads_flutter/src/utils/shared_preferences.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_audience_network/easy_audience_network.dart';
 import 'package:flutter/material.dart';
@@ -88,6 +89,8 @@ class ApslAds {
     if (adMobAdRequest != null) {
       _adRequest = adMobAdRequest;
     }
+    // Load SharedPreferences
+    SharedPrefHelper.initialLoad();
 
     if (admobConfiguration != null) {
       MobileAds.instance.updateRequestConfiguration(admobConfiguration);

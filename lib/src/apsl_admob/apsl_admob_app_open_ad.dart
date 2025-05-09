@@ -1,4 +1,5 @@
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
+import 'package:apsl_ads_flutter/src/utils/shared_preferences.dart';
 
 /// A class that encapsulates the logic for AdMob's App Open Ads.
 class ApslAdmobAppOpenAd extends ApslAdBase {
@@ -36,7 +37,15 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
 
   /// Internal method to load an ad. If [showAdOnLoad] is true, it will show the ad immediately after loading.
   Future<void> _load({bool showAdOnLoad = false}) {
-    if (isAdLoaded || forceStopToLoadAds) return Future.value();
+    // Handle first app open logic
+    if (SharedPrefHelper.getIsAppOpensFirstTime) {
+      SharedPrefHelper.setAppOpensFirstTimeStatus(false);
+      return Future.value();
+    }
+
+    if (isAdLoaded || forceStopToLoadAds) {
+      return Future.value();
+    }
 
     return AppOpenAd.load(
       adUnitId: adUnitId,
