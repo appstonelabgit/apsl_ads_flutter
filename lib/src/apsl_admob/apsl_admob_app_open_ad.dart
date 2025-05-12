@@ -1,9 +1,7 @@
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
-import 'package:apsl_ads_flutter/src/utils/shared_preferences.dart';
 
 class ApslAdmobAppOpenAd extends ApslAdBase {
   final AdRequest adRequest;
-  final bool blockAppOpen;
   final Duration maxCacheDuration = const Duration(hours: 4);
 
   AppOpenAd? _appOpenAd;
@@ -12,7 +10,7 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
   bool _isShowingAd = false;
   bool _isLoading = false;
 
-  ApslAdmobAppOpenAd(super.adUnitId, this.adRequest, this.blockAppOpen);
+  ApslAdmobAppOpenAd(super.adUnitId, this.adRequest);
 
   @override
   AdNetwork get adNetwork => AdNetwork.admob;

@@ -10,7 +10,6 @@ import 'package:apsl_ads_flutter/src/utils/apsl_event_controller.dart';
 import 'package:apsl_ads_flutter/src/utils/apsl_logger.dart';
 import 'package:apsl_ads_flutter/src/utils/auto_hiding_loader_dialog.dart';
 import 'package:apsl_ads_flutter/src/utils/extensions.dart';
-import 'package:apsl_ads_flutter/src/utils/shared_preferences.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_audience_network/easy_audience_network.dart';
 import 'package:flutter/material.dart';
@@ -59,7 +58,6 @@ class ApslAds {
 
   /// [_isMobileAdNetworkInitialized] is used to check if admob is initialized or not
   bool _isMobileAdNetworkInitialized = false;
-  bool _blockAppOpenAd = false;
 
   StreamSubscription? _streamSubscription;
 
@@ -86,15 +84,10 @@ class ApslAds {
     _showAdBadge = showAdBadge;
     _showNavigationAdAfterCount = showNavigationAdAfterCount;
     _preLoadRewardedAds = preloadRewardedAds;
-    _blockAppOpenAd = blockAppOpenAd;
     if (enableLogger) _logger.enable(enableLogger);
     adIdManager = manager;
     if (adMobAdRequest != null) {
       _adRequest = adMobAdRequest;
-    }
-    // Load SharedPreferences
-    if (_hideAppOpenAdWhileAppInstall) {
-      SharedPrefHelper.initialLoad();
     }
 
     if (admobConfiguration != null) {
@@ -296,8 +289,10 @@ class ApslAds {
           AdUnitType.appOpen,
           appOpenAdUnitId,
         )) {
-      final appOpenAdManager =
-          ApslAdmobAppOpenAd(appOpenAdUnitId, _adRequest, _blockAppOpenAd);
+      final appOpenAdManager = ApslAdmobAppOpenAd(
+        appOpenAdUnitId,
+        _adRequest,
+      );
 
       if (_appOpenAds.isEmpty) {
         await appOpenAdManager.load();

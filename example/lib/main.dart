@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
+import 'package:example/show_alert_dialogue.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -222,29 +223,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showCustomDialog(BuildContext context,
       {required String title, required String description}) {
-    showDialog(
+    showAlertDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(description),
-                // Add more Widgets if needed.
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
+      title: title,
+      content: description,
+      defaultActionText: "Close",
     );
   }
 }

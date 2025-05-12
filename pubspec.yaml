@@ -11,12 +11,12 @@ environment:
 
 dependencies:
   collection: ^1.19.1
-  collection: ^1.19.1
   easy_audience_network: ^0.0.7
   flutter:
     sdk: flutter
   google_mobile_ads: ^6.0.0
   logger: ^2.5.0
+  shared_preferences: ^2.5.3
   unity_ads_plugin: ^0.3.24
 
 dev_dependencies:

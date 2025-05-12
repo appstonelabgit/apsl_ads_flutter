@@ -1,3 +1,9 @@
+# Changelog
+
+## 1.2.15
+
+Improved performance with library updates
+
 ## 1.2.14
 
 Update the app open ads implementation.
