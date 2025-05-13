@@ -1,7 +1,7 @@
 name: apsl_ads_flutter
 description: Apsl Ads is a wrapper around famous ad packages which let you
   integrate ads easily
-version: 1.2.14
+version: 1.2.15
 homepage: https://github.com/appstonelabgit/apsl_ads_flutter
 repository: https://github.com/appstonelabgit/apsl_ads_flutter
 
@@ -21,5 +21,8 @@ dependencies:
 
 dev_dependencies:
   flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+  test: ^1.24.0
 
 flutter: null

@@ -5,23 +5,33 @@ import 'package:example/show_alert_dialogue.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+/// Test ad IDs manager for demonstration purposes.
+/// In a real app, you would use your own ad IDs.
 const AdsIdManager adIdManager = TestAdsIdManager();
 
 void main() async {
+  // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
-  await ApslAds.instance.initialize(
-    isShowAppOpenOnAppStateChange: true,
-    adIdManager,
-    unityTestMode: true,
-    fbTestMode: true,
-    fbTestingId: "334B90C731BDB120067DE02818259A5A",
-    adMobAdRequest: const AdRequest(),
-    admobConfiguration: RequestConfiguration(
-        testDeviceIds: ["334B90C731BDB120067DE02818259A5A"]),
-    showAdBadge: false,
-    fbiOSAdvertiserTrackingEnabled: true,
-    preloadRewardedAds: false,
-  );
+
+  // Initialize the Apsl Ads SDK with test configuration
+  try {
+    await ApslAds.instance.initialize(
+      isShowAppOpenOnAppStateChange: true,
+      adIdManager,
+      unityTestMode: true,
+      fbTestMode: true,
+      fbTestingId: "334B90C731BDB120067DE02818259A5A",
+      adMobAdRequest: const AdRequest(),
+      admobConfiguration: RequestConfiguration(
+          testDeviceIds: ["334B90C731BDB120067DE02818259A5A"]),
+      showAdBadge: false,
+      fbiOSAdvertiserTrackingEnabled: true,
+      preloadRewardedAds: false,
+    );
+  } catch (e) {
+    debugPrint('Failed to initialize ads: $e');
+    // In a real app, you might want to handle this error differently
+  }
 
   runApp(const MyApp());
 }
@@ -46,8 +56,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  /// Using it to cancel the subscribed callbacks
+  /// Stream subscription for ad events
   StreamSubscription? _streamSubscription;
+
+  @override
+  void dispose() {
+    // Clean up stream subscription when the widget is disposed
+    _streamSubscription?.cancel();
+    super.dispose();
+  }
 
   // Builds the UI of the home screen, including the list of ad options.
   @override
@@ -157,59 +174,103 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Attempts to show an ad from the specified ad network and ad unit type.
-  // If the ad is successfully shown, navigates to the next screen.
+  /// Shows an ad of the specified type and network.
+  ///
+  /// Parameters:
+  /// * [adUnitType] - The type of ad to show (interstitial, rewarded, etc.)
+  /// * [adNetwork] - The ad network to use (AdMob, Unity, Facebook)
+  /// * [navigate] - Whether to navigate to the next screen after showing the ad
   void _showAd(
     AdUnitType adUnitType, {
     AdNetwork adNetwork = AdNetwork.any,
     bool navigate = false,
   }) {
-    if (ApslAds.instance.showAd(adUnitType, adNetwork: adNetwork)) {
-      if (navigate) {
-        // Canceling the last callback subscribed
-        _streamSubscription?.cancel();
-        // Listening to the callback from showRewardedAd()
-        _streamSubscription = ApslAds.instance.onEvent.listen((event) {
-          if (event.adUnitType == adUnitType) {
-            _streamSubscription?.cancel();
-            _goToNextScreen(adNetwork: adNetwork);
-          }
-        });
+    try {
+      if (ApslAds.instance.showAd(adUnitType, adNetwork: adNetwork)) {
+        if (navigate) {
+          // Cancel any existing subscription
+          _streamSubscription?.cancel();
+
+          // Listen for ad events
+          _streamSubscription = ApslAds.instance.onEvent.listen(
+            (event) {
+              if (event.adUnitType == adUnitType) {
+                _streamSubscription?.cancel();
+                _goToNextScreen(adNetwork: adNetwork);
+              }
+            },
+            onError: (error) {
+              debugPrint('Error showing ad: $error');
+              if (navigate) _goToNextScreen(adNetwork: adNetwork);
+            },
+          );
+        }
+      } else {
+        if (navigate) _goToNextScreen(adNetwork: adNetwork);
       }
-    } else {
+    } catch (e) {
+      debugPrint('Error in _showAd: $e');
       if (navigate) _goToNextScreen(adNetwork: adNetwork);
     }
   }
 
+  /// Loads and shows a rewarded ad from the specified network.
+  ///
+  /// Parameters:
+  /// * [adNetwork] - The ad network to use for the rewarded ad
   void _loadAndShowRewardedAds({required AdNetwork adNetwork}) {
-    ApslAds.instance.loadAndShowRewardedAd(
-      context: context,
-      adNetwork: adNetwork,
-    );
+    try {
+      ApslAds.instance.loadAndShowRewardedAd(
+        context: context,
+        adNetwork: adNetwork,
+      );
 
-    _streamSubscription?.cancel();
-    _streamSubscription = ApslAds.instance.onEvent.listen((event) {
-      if (event.adUnitType == AdUnitType.rewarded) {
-        if (event.type == AdEventType.adDismissed) {
-        } else if (event.type == AdEventType.adFailedToShow) {
+      _streamSubscription?.cancel();
+      _streamSubscription = ApslAds.instance.onEvent.listen(
+        (event) {
+          if (event.adUnitType == AdUnitType.rewarded) {
+            if (event.type == AdEventType.adDismissed) {
+              // Ad was dismissed
+            } else if (event.type == AdEventType.adFailedToShow) {
+              if (mounted) {
+                _showCustomDialog(
+                  context,
+                  title: "Ads not available",
+                  description: "Please try again later.",
+                );
+              }
+            } else if (event.type == AdEventType.earnedReward) {
+              if (mounted) {
+                _showCustomDialog(
+                  context,
+                  title: "Congratulations",
+                  description: "You earned rewards",
+                );
+              }
+            }
+          }
+        },
+        onError: (error) {
+          debugPrint('Error in rewarded ad: $error');
           if (mounted) {
             _showCustomDialog(
               context,
-              title: "Ads not available",
-              description: "Please try again later.",
+              title: "Error",
+              description: "Failed to show rewarded ad. Please try again.",
             );
           }
-        } else if (event.type == AdEventType.earnedReward) {
-          if (mounted) {
-            _showCustomDialog(
-              context,
-              title: "Congratulations",
-              description: "You earned rewards",
-            );
-          }
-        }
+        },
+      );
+    } catch (e) {
+      debugPrint('Error in _loadAndShowRewardedAds: $e');
+      if (mounted) {
+        _showCustomDialog(
+          context,
+          title: "Error",
+          description: "Failed to load rewarded ad. Please try again.",
+        );
       }
-    });
+    }
   }
 
   void _goToNextScreen({AdNetwork? adNetwork}) {

@@ -194,6 +194,32 @@ class ApslAds {
     return ad;
   }
 
+  /// Creates a native ad for the specified ad network.
+  ///
+  /// This method creates and returns a native ad instance based on the provided [adNetwork].
+  /// The native ad can be customized using the following parameters:
+  ///
+  /// * [nativeTemplateStyle] - Optional styling for the native ad template
+  /// * [templateType] - The type of template to use (small, medium, or custom)
+  /// * [nativeAdBorderColor] - Optional color for the native ad border
+  /// * [nativeAdBorderRadius] - Optional border radius for the native ad
+  ///
+  /// Currently supported networks:
+  /// * AdMob - Full support with all customization options
+  /// * Unity - Coming soon
+  /// * Facebook - Coming soon
+  ///
+  /// Returns null if the ad network is not supported or if the native ad ID is not configured.
+  ///
+  /// Example:
+  /// ```dart
+  /// final nativeAd = ApslAds.instance.createNative(
+  ///   adNetwork: AdNetwork.admob,
+  ///   templateType: TemplateType.medium,
+  ///   nativeAdBorderColor: Colors.blue,
+  ///   nativeAdBorderRadius: 8.0,
+  /// );
+  /// ```
   ApslAdBase? createNative({
     required AdNetwork adNetwork,
     NativeTemplateStyle? nativeTemplateStyle,
