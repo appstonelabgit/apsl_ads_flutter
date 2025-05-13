@@ -2,24 +2,45 @@ import 'package:apsl_ads_flutter/src/enums/apsl_event_type.dart';
 import 'package:apsl_ads_flutter/src/enums/ad_network.dart';
 import 'package:apsl_ads_flutter/src/enums/ad_unit_type.dart';
 
-/// [AdEvent] is used to pass data inside event streams in apsl ads instance
-/// You can use this to distinguish between different event types and each event type has a data attached to it.
+/// [AdEvent] is used to represent ad-related events across the APSL Ads system.
 class AdEvent {
   final AdEventType type;
   final AdNetwork adNetwork;
   final AdUnitType? adUnitType;
 
-  /// Any custom data along with the event
+  /// Custom data attached to the event
   final Object? data;
 
-  /// In case of [AdEventType.adFailedToLoad] & [AdEventType.adFailedToShow] or in any error case
+  /// Error message if the event represents a failure
   final String? error;
 
-  AdEvent({
+  const AdEvent({
     required this.type,
     required this.adNetwork,
     this.adUnitType,
     this.data,
     this.error,
   });
+
+  /// Named constructor for error events
+  factory AdEvent.error({
+    required AdEventType type,
+    required AdNetwork adNetwork,
+    AdUnitType? adUnitType,
+    required String error,
+    Object? data,
+  }) {
+    return AdEvent(
+      type: type,
+      adNetwork: adNetwork,
+      adUnitType: adUnitType,
+      error: error,
+      data: data,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'AdEvent(type: $type, network: $adNetwork, unit: $adUnitType, data: $data, error: $error)';
+  }
 }

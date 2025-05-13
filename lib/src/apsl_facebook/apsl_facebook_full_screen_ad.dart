@@ -6,11 +6,22 @@ import 'package:easy_audience_network/easy_audience_network.dart';
 class ApslFacebookFullScreenAd extends ApslAdBase {
   final AdUnitType _adUnitType;
   bool _isAdLoaded = false;
-  ApslFacebookFullScreenAd(String adUnitId, this._adUnitType)
-      : assert(
-            _adUnitType == AdUnitType.interstitial ||
-                _adUnitType == AdUnitType.rewarded,
+  bool _isLoading = false;
+  final bool _preLoadRewardedAds;
+
+  InterstitialAd? interstitialAd;
+  RewardedAd? rewardedAd;
+
+  ApslFacebookFullScreenAd({
+    required String adUnitId,
+    required AdUnitType adUnitType,
+    bool preLoadRewardedAds = false,
+  })  : assert(
+            adUnitType == AdUnitType.interstitial ||
+                adUnitType == AdUnitType.rewarded,
             'Ad Unit Type must be rewarded or interstitial'),
+        _adUnitType = adUnitType,
+        _preLoadRewardedAds = preLoadRewardedAds,
         super(adUnitId);
 
   @override
@@ -25,17 +36,20 @@ class ApslFacebookFullScreenAd extends ApslAdBase {
   @override
   void dispose() {
     _isAdLoaded = false;
+    _isLoading = false;
 
-    if (adUnitType == AdUnitType.interstitial) {
-    } else {}
+    interstitialAd?.destroy();
+    interstitialAd = null;
+
+    rewardedAd?.destroy();
+    rewardedAd = null;
   }
-
-  InterstitialAd? interstitialAd;
-  RewardedAd? rewardedAd;
 
   @override
   Future<void> load() async {
-    if (_isAdLoaded) return;
+    if (_isAdLoaded || _isLoading) return;
+
+    _isLoading = true;
 
     if (adUnitType == AdUnitType.interstitial) {
       interstitialAd = InterstitialAd(adUnitId);
@@ -49,20 +63,15 @@ class ApslFacebookFullScreenAd extends ApslAdBase {
   }
 
   @override
-  show() async {
-    if (!_isAdLoaded) return;
+  Future<void> show() async {
+    if (!_isAdLoaded) {
+      load(); // Try to load again if not loaded
+      return;
+    }
 
-    if (adUnitType == AdUnitType.interstitial) {
-      if (interstitialAd == null) {
-        load();
-        return;
-      }
+    if (adUnitType == AdUnitType.interstitial && interstitialAd != null) {
       await interstitialAd?.show();
-    } else {
-      if (rewardedAd == null) {
-        load();
-        return;
-      }
+    } else if (adUnitType == AdUnitType.rewarded && rewardedAd != null) {
       await rewardedAd?.show();
     }
   }
@@ -71,11 +80,17 @@ class ApslFacebookFullScreenAd extends ApslAdBase {
     return RewardedAdListener(
       onError: (code, value) {
         _isAdLoaded = false;
+        _isLoading = false;
         onAdFailedToLoad?.call(adNetwork, adUnitType, null,
-            'Error occurred while loading $code $value ad');
+            errorMessage: 'Error occurred while loading $code: $value');
+
+        Future.delayed(const Duration(seconds: 5), () {
+          if (!_isAdLoaded) load();
+        });
       },
       onLoaded: () {
         _isAdLoaded = true;
+        _isLoading = false;
         onAdLoaded?.call(adNetwork, adUnitType, 'Loaded');
       },
       onClicked: () {
@@ -83,25 +98,34 @@ class ApslFacebookFullScreenAd extends ApslAdBase {
       },
       onLoggingImpression: () {},
       onVideoComplete: () {
-        onEarnedReward?.call(adNetwork, adUnitType, null, null);
+        onEarnedReward?.call(adNetwork, adUnitType, null, rewardAmount: null);
       },
       onVideoClosed: () {
         onAdDismissed?.call(adNetwork, adUnitType, 'Dismissed');
         _isAdLoaded = false;
-        load();
+
+        if (_preLoadRewardedAds) {
+          load(); // Preload next one
+        }
       },
     );
   }
 
-  InterstitialAdListener? _onInterstitialAdListener() {
+  InterstitialAdListener _onInterstitialAdListener() {
     return InterstitialAdListener(
       onError: (code, value) {
         _isAdLoaded = false;
+        _isLoading = false;
         onAdFailedToLoad?.call(adNetwork, adUnitType, null,
-            'Error occurred while loading $code $value ad');
+            errorMessage: 'Error occurred while loading $code: $value');
+
+        Future.delayed(const Duration(seconds: 5), () {
+          if (!_isAdLoaded) load();
+        });
       },
       onLoaded: () {
         _isAdLoaded = true;
+        _isLoading = false;
         onAdLoaded?.call(adNetwork, adUnitType, 'Loaded');
       },
       onClicked: () {
@@ -113,7 +137,7 @@ class ApslFacebookFullScreenAd extends ApslAdBase {
       onDismissed: () {
         onAdDismissed?.call(adNetwork, adUnitType, 'Dismissed');
         _isAdLoaded = false;
-        load();
+        load(); // Load again after close
       },
       onLoggingImpression: () {},
     );

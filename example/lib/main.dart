@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
+import 'package:example/show_alert_dialogue.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -14,11 +14,13 @@ void main() async {
     adIdManager,
     unityTestMode: true,
     fbTestMode: true,
-    fbTestingId: "DB4376A4F649F3EECA878BB77ED7BA08",
+    fbTestingId: "334B90C731BDB120067DE02818259A5A",
     adMobAdRequest: const AdRequest(),
-    admobConfiguration: RequestConfiguration(testDeviceIds: []),
+    admobConfiguration: RequestConfiguration(
+        testDeviceIds: ["334B90C731BDB120067DE02818259A5A"]),
     showAdBadge: false,
     fbiOSAdvertiserTrackingEnabled: true,
+    preloadRewardedAds: false,
   );
 
   runApp(const MyApp());
@@ -47,6 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Using it to cancel the subscribed callbacks
   StreamSubscription? _streamSubscription;
 
+  // Builds the UI of the home screen, including the list of ad options.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,52 +62,73 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              ElevatedButton(
+                  onPressed: () async {
+                    ApslAds.instance.destroyAds();
+
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  },
+                  child: const Text("Destroy")),
               _sectionTitleWidget(context, title: 'App Open'),
               AdListTile(
                 networkName: 'Admob AppOpen',
-                onTap: () => _showAd(AdNetwork.admob, AdUnitType.appOpen),
+                onTap: () =>
+                    _showAd(AdUnitType.appOpen, adNetwork: AdNetwork.admob),
               ),
-              const ApslSequenceNativeAd(templateType: TemplateType.medium),
+              const ApslSequenceNativeAd(
+                templateType: TemplateType.small,
+              ),
               const Divider(thickness: 2),
+              // Interstitial Ads Section
               _sectionTitleWidget(context, title: 'Interstitial'),
               AdListTile(
                 networkName: 'Admob Interstitial',
-                onTap: () => _showAd(AdNetwork.admob, AdUnitType.interstitial),
+                onTap: () => _showAd(AdUnitType.interstitial,
+                    adNetwork: AdNetwork.admob),
               ),
               AdListTile(
                 networkName: 'Facebook Interstitial',
-                onTap: () =>
-                    _showAd(AdNetwork.facebook, AdUnitType.interstitial),
+                onTap: () => _showAd(AdUnitType.interstitial,
+                    adNetwork: AdNetwork.facebook),
               ),
               AdListTile(
                 networkName: 'Unity Interstitial',
-                onTap: () => _showAd(AdNetwork.unity, AdUnitType.interstitial),
+                onTap: () => _showAd(AdUnitType.interstitial,
+                    adNetwork: AdNetwork.unity),
               ),
+
               AdListTile(
                 networkName: 'Show Interstitial one by one',
-                onTap: () => _showAvailableAd(AdUnitType.interstitial),
+                onTap: () => _showAd(AdUnitType.interstitial),
+              ),
+              AdListTile(
+                networkName: 'Show on Navigation',
+                onTap: () => _showAd(AdUnitType.interstitial, navigate: true),
               ),
               const Divider(thickness: 2),
+              // Rewarded Ads Section
               _sectionTitleWidget(context, title: 'Rewarded'),
               AdListTile(
                 networkName: 'Admob Rewarded',
-                onTap: () => _showAd(AdNetwork.admob, AdUnitType.rewarded),
+                onTap: () =>
+                    _loadAndShowRewardedAds(adNetwork: AdNetwork.admob),
               ),
               AdListTile(
                 networkName: 'Facebook Rewarded',
-                onTap: () => _showAd(AdNetwork.facebook, AdUnitType.rewarded),
+                onTap: () =>
+                    _loadAndShowRewardedAds(adNetwork: AdNetwork.facebook),
               ),
               AdListTile(
                 networkName: 'Unity Rewarded',
-                onTap: () => _showAd(AdNetwork.unity, AdUnitType.rewarded),
+                onTap: () =>
+                    _loadAndShowRewardedAds(adNetwork: AdNetwork.unity),
               ),
+
               AdListTile(
                 networkName: 'Show Rewarded one by one',
-                onTap: () => _showAvailableAd(AdUnitType.rewarded),
-              ),
-              AdListTile(
-                networkName: "Show navigation ad",
-                onTap: () => _showAdOnNavigation(),
+                onTap: () => _loadAndShowRewardedAds(adNetwork: AdNetwork.any),
               ),
               const ApslSequenceBannerAd(
                 orderOfAdNetworks: [
@@ -120,6 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Creates a ListTile widget with a title indicating the section of ads.
   Widget _sectionTitleWidget(BuildContext context, {String title = ""}) {
     return ListTile(
       title: Text(
@@ -132,69 +157,77 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showAd(AdNetwork adNetwork, AdUnitType adUnitType) {
-    if (ApslAds.instance.showAd(
-      adUnitType,
-      adNetwork: adNetwork,
-      shouldShowLoader: Platform.isAndroid,
-      context: context,
-      delayInSeconds: 1,
-    )) {
-      // Canceling the last callback subscribed
-      _streamSubscription?.cancel();
-      // Listening to the callback from showRewardedAd()
-      _streamSubscription = ApslAds.instance.onEvent.listen((event) {
-        if (event.adUnitType == adUnitType) {
-          _streamSubscription?.cancel();
-          goToNextScreen(adNetwork: adNetwork);
-        }
-      });
-    } else {
-      goToNextScreen(adNetwork: adNetwork);
-    }
-  }
-
-  void _showAvailableAd(AdUnitType adUnitType) {
-    if (ApslAds.instance.showAd(adUnitType)) {
-      // Canceling the last callback subscribed
-      _streamSubscription?.cancel();
-      // Listening to the callback from showRewardedAd()
-      _streamSubscription = ApslAds.instance.onEvent.listen((event) {
-        if (event.adUnitType == adUnitType) {
-          _streamSubscription?.cancel();
-          goToNextScreen();
-        }
-      });
-    } else {
-      goToNextScreen();
-    }
-  }
-
-  void _showAdOnNavigation() {
-    if (ApslAds.instance.showAdOnNavigation()) {
-      // Canceling the last callback subscribed
-      _streamSubscription?.cancel();
-      // Listening to the callback from showRewardedAd()
-      _streamSubscription = ApslAds.instance.onEvent.listen((event) {
-        if (event.adUnitType == AdUnitType.interstitial) {
-          if (event.type == AdEventType.adFailedToLoad ||
-              event.type == AdEventType.adDismissed) {
+  // Attempts to show an ad from the specified ad network and ad unit type.
+  // If the ad is successfully shown, navigates to the next screen.
+  void _showAd(
+    AdUnitType adUnitType, {
+    AdNetwork adNetwork = AdNetwork.any,
+    bool navigate = false,
+  }) {
+    if (ApslAds.instance.showAd(adUnitType, adNetwork: adNetwork)) {
+      if (navigate) {
+        // Canceling the last callback subscribed
+        _streamSubscription?.cancel();
+        // Listening to the callback from showRewardedAd()
+        _streamSubscription = ApslAds.instance.onEvent.listen((event) {
+          if (event.adUnitType == adUnitType) {
             _streamSubscription?.cancel();
-            goToNextScreen();
+            _goToNextScreen(adNetwork: adNetwork);
+          }
+        });
+      }
+    } else {
+      if (navigate) _goToNextScreen(adNetwork: adNetwork);
+    }
+  }
+
+  void _loadAndShowRewardedAds({required AdNetwork adNetwork}) {
+    ApslAds.instance.loadAndShowRewardedAd(
+      context: context,
+      adNetwork: adNetwork,
+    );
+
+    _streamSubscription?.cancel();
+    _streamSubscription = ApslAds.instance.onEvent.listen((event) {
+      if (event.adUnitType == AdUnitType.rewarded) {
+        if (event.type == AdEventType.adDismissed) {
+        } else if (event.type == AdEventType.adFailedToShow) {
+          if (mounted) {
+            _showCustomDialog(
+              context,
+              title: "Ads not available",
+              description: "Please try again later.",
+            );
+          }
+        } else if (event.type == AdEventType.earnedReward) {
+          if (mounted) {
+            _showCustomDialog(
+              context,
+              title: "Congratulations",
+              description: "You earned rewards",
+            );
           }
         }
-      });
-    } else {
-      goToNextScreen();
-    }
+      }
+    });
   }
 
-  void goToNextScreen({AdNetwork? adNetwork}) {
+  void _goToNextScreen({AdNetwork? adNetwork}) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => DetailScreen(adNetwork: adNetwork),
       ),
+    );
+  }
+
+  void _showCustomDialog(BuildContext context,
+      {required String title, required String description}) {
+    showAlertDialog(
+      context: context,
+      title: title,
+      content: description,
+      defaultActionText: "Close",
     );
   }
 }

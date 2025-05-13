@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 class ApslBannerAd extends StatefulWidget {
   final AdNetwork adNetwork;
   final AdSize adSize;
+
   const ApslBannerAd({
     this.adNetwork = AdNetwork.admob,
     this.adSize = AdSize.banner,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<ApslBannerAd> createState() => _ApslBannerAdState();
@@ -17,49 +18,69 @@ class ApslBannerAd extends StatefulWidget {
 
 class _ApslBannerAdState extends State<ApslBannerAd> {
   ApslAdBase? _bannerAd;
+  late AdNetwork _currentNetwork;
+  late AdSize _currentSize;
 
   @override
-  Widget build(BuildContext context) {
-    if (ApslAds.instance.showAdBadge) {
-      return BadgedBanner(child: _bannerAd?.show(), adSize: widget.adSize);
-    }
-
-    return _bannerAd?.show() ??
-        Container(height: widget.adSize.height.toDouble());
+  void initState() {
+    super.initState();
+    _currentNetwork = widget.adNetwork;
+    _currentSize = widget.adSize;
+    _initBanner();
   }
 
   @override
   void didUpdateWidget(covariant ApslBannerAd oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    createBanner();
-    _bannerAd?.onBannerAdReadyForSetState = onBannerAdReadyForSetState;
+    if (widget.adNetwork != _currentNetwork || widget.adSize != _currentSize) {
+      _currentNetwork = widget.adNetwork;
+      _currentSize = widget.adSize;
+      _initBanner();
+    }
   }
 
-  void createBanner() {
-    _bannerAd = ApslAds.instance
-        .createBanner(adNetwork: widget.adNetwork, adSize: widget.adSize);
+  void _initBanner() {
+    _bannerAd?.dispose();
+    _bannerAd = ApslAds.instance.createBanner(
+      adNetwork: _currentNetwork,
+      adSize: _currentSize,
+    );
+
+    _bannerAd?.onAdLoaded = _onBannerAdReady;
+    _bannerAd?.onBannerAdReadyForSetState = _onBannerAdReady;
+
     _bannerAd?.load();
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    createBanner();
-
-    _bannerAd?.onAdLoaded = onBannerAdReadyForSetState;
+  void _onBannerAdReady(
+    AdNetwork adNetwork,
+    AdUnitType adUnitType,
+    Object? data, {
+    String? errorMessage,
+    String? rewardType,
+    num? rewardAmount,
+  }) {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    super.dispose();
     _bannerAd?.dispose();
     _bannerAd = null;
+    super.dispose();
   }
 
-  void onBannerAdReadyForSetState(
-      AdNetwork adNetwork, AdUnitType adUnitType, Object? data) {
-    setState(() {});
+  @override
+  Widget build(BuildContext context) {
+    final adWidget = _bannerAd?.show();
+
+    if (ApslAds.instance.showAdBadge) {
+      return BadgedBanner(child: adWidget, adSize: widget.adSize);
+    }
+
+    return adWidget ??
+        SizedBox(
+            height: widget.adSize.height.toDouble()); // Prevent layout shift
   }
 }

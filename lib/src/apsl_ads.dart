@@ -14,7 +14,6 @@ import 'package:collection/collection.dart';
 import 'package:easy_audience_network/easy_audience_network.dart';
 import 'package:flutter/material.dart';
 import 'package:unity_ads_plugin/unity_ads_plugin.dart';
-
 import 'apsl_admob/apsl_admob_native_ad.dart';
 
 class ApslAds {
@@ -29,7 +28,8 @@ class ApslAds {
   final _eventController = ApslEventController();
   Stream<AdEvent> get onEvent => _eventController.onEvent;
 
-  List<ApslAdBase> get _allAds => [..._interstitialAds, ..._rewardedAds];
+  List<ApslAdBase> get _allAds =>
+      [..._interstitialAds, ..._rewardedAds, ..._appOpenAds];
 
   /// All the App Open Ads ads will be stored in it
   final List<ApslAdBase> _appOpenAds = [];
@@ -47,12 +47,19 @@ class ApslAds {
   bool get showAdBadge => _showAdBadge;
   bool _showAdBadge = false;
 
+  bool _preLoadRewardedAds = false;
+
   int _interstitialAdIndex = 0;
   int _rewardedAdIndex = 0;
   int _appOpenAdIndex = 0;
 
   int _navigationCount = 0;
   int _showNavigationAdAfterCount = 1;
+
+  /// [_isMobileAdNetworkInitialized] is used to check if admob is initialized or not
+  bool _isMobileAdNetworkInitialized = false;
+
+  StreamSubscription? _streamSubscription;
 
   /// Initializes the Google Mobile Ads SDK.
   ///
@@ -69,12 +76,14 @@ class ApslAds {
     bool enableLogger = true,
     String? fbTestingId,
     bool fbiOSAdvertiserTrackingEnabled = false,
-    int appOpenAdOrientation = AppOpenAd.orientationPortrait,
     bool showAdBadge = false,
     int showNavigationAdAfterCount = 1,
+    bool preloadRewardedAds = false,
+    bool blockAppOpenAd = false,
   }) async {
     _showAdBadge = showAdBadge;
     _showNavigationAdAfterCount = showNavigationAdAfterCount;
+    _preLoadRewardedAds = preloadRewardedAds;
     if (enableLogger) _logger.enable(enableLogger);
     adIdManager = manager;
     if (adMobAdRequest != null) {
@@ -86,56 +95,59 @@ class ApslAds {
     }
 
     for (var appAdId in manager.appAdIds) {
-      final adNetworkName = getAdNetworkFromString(appAdId.adNetwork);
-      switch (adNetworkName) {
-        case AdNetwork.admob:
-          if (appAdId.appId.isNotEmpty) {
-            final response = await MobileAds.instance.initialize();
-            final status = response.adapterStatuses.values.firstOrNull?.state;
+      if (appAdId.appId.isNotEmpty) {
+        final adNetworkName = getAdNetworkFromString(appAdId.adNetwork.name);
+        switch (adNetworkName) {
+          case AdNetwork.admob:
 
-            response.adapterStatuses.forEach((key, value) {
-              _logger.logInfo(
-                  'Google-mobile-ads Adapter status for $key: ${value.description}');
-            });
+            // Initializing Mobile Ads SDK
+            if (!_isMobileAdNetworkInitialized) {
+              final response = await MobileAds.instance.initialize();
+              final status = response.adapterStatuses.values.firstOrNull?.state;
 
-            _eventController.fireNetworkInitializedEvent(
-                AdNetwork.admob, status == AdapterInitializationState.ready);
+              response.adapterStatuses.forEach((key, value) {
+                _logger.logInfo(
+                    'Google-mobile-ads Adapter status for $key: ${value.description}');
+              });
+
+              _eventController.fireNetworkInitializedEvent(
+                  AdNetwork.admob, status == AdapterInitializationState.ready);
+
+              _isMobileAdNetworkInitialized = true;
+            }
 
             // Initializing admob Ads
             await ApslAds.instance._initAdmob(
               appOpenAdUnitId: appAdId.appOpenId,
               interstitialAdUnitId: appAdId.interstitialId,
               rewardedAdUnitId: appAdId.rewardedId,
-              appOpenAdOrientation: appOpenAdOrientation,
               isShowAppOpenOnAppStateChange: isShowAppOpenOnAppStateChange,
             );
-          }
-          break;
-        case AdNetwork.unity:
-          if (appAdId.appId.isNotEmpty) {
+
+            break;
+          case AdNetwork.unity:
+            // Initializing unity Ads
             ApslAds.instance._initUnity(
               unityGameId: appAdId.appId,
               testMode: unityTestMode,
               interstitialPlacementId: appAdId.interstitialId,
               rewardedPlacementId: appAdId.rewardedId,
             );
-          }
-          break;
-        case AdNetwork.facebook:
-          if (appAdId.appId.isNotEmpty) {
-            _initFacebook(
+            break;
+          case AdNetwork.facebook:
+            // Initializing facebook Ads
+            ApslAds.instance._initFacebook(
               testingId: fbTestingId,
               testMode: fbTestMode,
               iOSAdvertiserTrackingEnabled: fbiOSAdvertiserTrackingEnabled,
               interstitialPlacementId: appAdId.interstitialId,
               rewardedPlacementId: appAdId.rewardedId,
             );
-          }
-          break;
-        case AdNetwork.any:
-          break;
-        default:
-          break;
+            break;
+
+          case AdNetwork.any:
+            break;
+        }
       }
     }
   }
@@ -175,6 +187,7 @@ class ApslAds {
           _eventController.setupEvents(ad);
         }
         break;
+
       default:
         ad = null;
     }
@@ -185,6 +198,8 @@ class ApslAds {
     required AdNetwork adNetwork,
     NativeTemplateStyle? nativeTemplateStyle,
     TemplateType? templateType,
+    Color? nativeAdBorderColor,
+    double? nativeAdBorderRadius,
   }) {
     ApslAdBase? ad;
     final nativeId = adIdManager.getAppIds(adNetwork).nativeId;
@@ -198,6 +213,8 @@ class ApslAds {
             nativeId,
             nativeTemplateStyle: nativeTemplateStyle,
             templateType: templateType,
+            nativeAdBorderColor: nativeAdBorderColor,
+            nativeAdBorderRadius: nativeAdBorderRadius,
           );
         }
         break;
@@ -227,7 +244,6 @@ class ApslAds {
     String? rewardedAdUnitId,
     bool immersiveModeEnabled = true,
     bool isShowAppOpenOnAppStateChange = true,
-    int appOpenAdOrientation = AppOpenAd.orientationPortrait,
   }) async {
     // init interstitial ads
     ApslLogger().logInfo("InterstitialAdUnitId $interstitialAdUnitId");
@@ -253,22 +269,35 @@ class ApslAds {
           rewardedAdUnitId,
         )) {
       final ad = ApslAdmobRewardedAd(
-          rewardedAdUnitId, _adRequest, immersiveModeEnabled);
+        adRequest: _adRequest,
+        adUnitId: rewardedAdUnitId,
+        immersiveModeEnabled: immersiveModeEnabled,
+        preLoadRewardedAds: _preLoadRewardedAds,
+      );
       _rewardedAds.add(ad);
       _eventController.setupEvents(ad);
 
-      await ad.load();
+      if (_preLoadRewardedAds) {
+        await ad.load(); //dv removed preloading of rewarded ad
+      }
     }
 
-    if (appOpenAdUnitId != null &&
+    if (!forceStopToLoadAds &&
+        appOpenAdUnitId != null &&
         _appOpenAds.doesNotContain(
           AdNetwork.admob,
           AdUnitType.appOpen,
           appOpenAdUnitId,
         )) {
-      final appOpenAdManager =
-          ApslAdmobAppOpenAd(appOpenAdUnitId, _adRequest, appOpenAdOrientation);
-      await appOpenAdManager.load();
+      final appOpenAdManager = ApslAdmobAppOpenAd(
+        appOpenAdUnitId,
+        _adRequest,
+      );
+
+      if (_appOpenAds.isEmpty) {
+        await appOpenAdManager.load();
+      }
+
       if (isShowAppOpenOnAppStateChange) {
         _appLifecycleReactor =
             AppLifecycleReactor(appOpenAdManager: appOpenAdManager);
@@ -307,7 +336,9 @@ class ApslAds {
           AdUnitType.interstitial,
           interstitialPlacementId,
         )) {
-      final ad = ApslUnityAd(interstitialPlacementId, AdUnitType.interstitial);
+      final ad = ApslUnityAd(
+          adUnitId: interstitialPlacementId,
+          adUnitType: AdUnitType.interstitial);
       _interstitialAds.add(ad);
       _eventController.setupEvents(ad);
 
@@ -321,11 +352,17 @@ class ApslAds {
           AdUnitType.rewarded,
           rewardedPlacementId,
         )) {
-      final ad = ApslUnityAd(rewardedPlacementId, AdUnitType.rewarded);
+      final ad = ApslUnityAd(
+        adUnitId: rewardedPlacementId,
+        adUnitType: AdUnitType.rewarded,
+        preLoadRewardedAds: _preLoadRewardedAds,
+      );
       _rewardedAds.add(ad);
       _eventController.setupEvents(ad);
 
-      await ad.load();
+      if (_preLoadRewardedAds) {
+        await ad.load(); //dv removed preloading of rewarded ad
+      }
     }
   }
 
@@ -353,7 +390,9 @@ class ApslAds {
           interstitialPlacementId,
         )) {
       final ad = ApslFacebookFullScreenAd(
-          interstitialPlacementId, AdUnitType.interstitial);
+        adUnitId: interstitialPlacementId,
+        adUnitType: AdUnitType.interstitial,
+      );
       _interstitialAds.add(ad);
       _eventController.setupEvents(ad);
 
@@ -367,12 +406,17 @@ class ApslAds {
           AdUnitType.rewarded,
           rewardedPlacementId,
         )) {
-      final ad =
-          ApslFacebookFullScreenAd(rewardedPlacementId, AdUnitType.rewarded);
+      final ad = ApslFacebookFullScreenAd(
+        adUnitId: rewardedPlacementId,
+        adUnitType: AdUnitType.rewarded,
+        preLoadRewardedAds: _preLoadRewardedAds,
+      );
       _rewardedAds.add(ad);
       _eventController.setupEvents(ad);
 
-      await ad.load();
+      if (_preLoadRewardedAds) {
+        await ad.load(); //dv removed preloading of rewarded ad
+      }
     }
   }
 
@@ -384,6 +428,7 @@ class ApslAds {
   /// [adUnitType] should be mentioned here, only interstitial or rewarded should be mentioned here
   /// if [adNetwork] is provided, only that network's ad would be displayed
   /// if [shouldShowLoader] before interstitial. If it's true, you have to provide build context.
+
   bool showAd(
     AdUnitType adUnitType, {
     AdNetwork adNetwork = AdNetwork.any,
@@ -391,68 +436,99 @@ class ApslAds {
     int delayInSeconds = 2,
     BuildContext? context,
   }) {
-    List<ApslAdBase> ads = [];
-    int index = 0;
-    switch (adUnitType) {
-      case AdUnitType.rewarded:
-        index = _rewardedAdIndex;
-        ads = _rewardedAds;
-        break;
-      case AdUnitType.interstitial:
-        index = _interstitialAdIndex;
-        ads = _interstitialAds;
-        break;
-      case AdUnitType.appOpen:
-        index = _appOpenAdIndex;
-        ads = _appOpenAds;
-        break;
-      default:
-        break;
-    }
+    try {
+      final ad = _fetchAdByTypeAndNetwork(adUnitType, adNetwork);
 
-    if (adNetwork != AdNetwork.any) {
-      final ad = ads.firstWhereOrNull((e) => adNetwork == e.adNetwork);
-      if (ad?.isAdLoaded == true) {
-        if (ad?.adUnitType == AdUnitType.interstitial &&
-            shouldShowLoader &&
-            context != null) {
-          showLoaderDialog(context, delay: delayInSeconds)
-              .then((_) => ad?.show());
-        } else {
-          ad?.show();
-        }
-        return true;
-      } else {
+      _logger.logInfo("message: ${ad?.adNetwork} ${ad?.adUnitType} $ad");
+
+      if (ad == null || !ad.isAdLoaded) {
         _logger.logInfo(
-            '${ad?.adNetwork} ${ad?.adUnitType} was not loaded, so called loading');
+            '${ad?.adNetwork ?? 'No ad'} $adUnitType was not loaded, so called loading');
         ad?.load();
+        if (adNetwork == AdNetwork.any) _updateAdIndex(adUnitType);
         return false;
       }
-    }
 
-    final ad = ads[index];
-
-    if (ad.isAdLoaded) {
       if (adNetwork == AdNetwork.any || adNetwork == ad.adNetwork) {
         if (ad.adUnitType == AdUnitType.interstitial &&
             shouldShowLoader &&
             context != null) {
-          showLoaderDialog(context, delay: delayInSeconds)
+          showAutoHideLoaderDialog(context, delay: delayInSeconds)
               .then((_) => ad.show());
         } else {
           ad.show();
         }
-        updateAdIndex(adUnitType);
+        if (adNetwork == AdNetwork.any) _updateAdIndex(adUnitType);
         return true;
       }
-    } else {
-      _logger.logInfo(
-          '${ad.adNetwork} ${ad.adUnitType} was not loaded, so called loading');
-      ad.load();
+    } catch (e) {
+      _logger.logInfo('Error in showing ad: $e'); // log the exception
+      return false;
     }
 
-    updateAdIndex(adUnitType);
     return false;
+  }
+
+  /// Displays a Rewarded ad from [adNetwork]. If [adNetwork] is not specified,
+  /// the function will attempt to display the first loaded ad from the list.
+  /// If [adNetwork] is specified, only that network's ad will be displayed.
+  ///
+  /// Returns `true` if the ad was successfully displayed, `false` otherwise.
+
+  bool loadAndShowRewardedAd({
+    required BuildContext context,
+    AdNetwork adNetwork = AdNetwork.any,
+  }) {
+    try {
+      final ad = _fetchAdByTypeAndNetwork(AdUnitType.rewarded, adNetwork);
+      ad?.load();
+
+      showLoaderDialog(context);
+
+      _streamSubscription?.cancel();
+      _streamSubscription = ApslAds.instance.onEvent.listen((event) {
+        if (event.adUnitType == AdUnitType.rewarded) {
+          _logger.logInfo(
+              "message: ${event.adNetwork} ${event.adUnitType} $event");
+
+          if (event.type == AdEventType.adLoaded) {
+            _updateAdIndex(AdUnitType.rewarded);
+            hideLoaderDialog();
+            ad?.show();
+          } else if (event.type == AdEventType.adFailedToLoad) {
+            _updateAdIndex(AdUnitType.rewarded);
+            hideLoaderDialog();
+          }
+        }
+      });
+    } catch (e) {
+      _logger.logInfo("Error in showing rewarded ad: $e"); // log the extention
+      return false;
+    }
+    return false;
+  }
+
+  ApslAdBase? _fetchAdByTypeAndNetwork(
+      AdUnitType adUnitType, AdNetwork adNetwork) {
+    final mapForAds = {
+      AdUnitType.rewarded: _rewardedAds,
+      AdUnitType.interstitial: _interstitialAds,
+      AdUnitType.appOpen: _appOpenAds,
+    };
+    final mapForIndexes = {
+      AdUnitType.rewarded: _rewardedAdIndex,
+      AdUnitType.interstitial: _interstitialAdIndex,
+      AdUnitType.appOpen: _appOpenAdIndex,
+    };
+
+    final ads = mapForAds[adUnitType];
+    final index = mapForIndexes[adUnitType];
+
+    return adNetwork != AdNetwork.any
+        ? ads?.firstWhereOrNull((e) => adNetwork == e.adNetwork)
+        : ads != null && ads.isNotEmpty
+            ? ads[index!]
+            : null;
   }
 
   /// This will load both rewarded and interstitial ads.
@@ -532,13 +608,18 @@ class ApslAds {
         e.dispose();
       }
     }
+    _appOpenAds.clear();
+    _interstitialAds.clear();
+    _rewardedAds.clear();
+    forceStopToLoadAds = true;
   }
 
   /// This method is used to show navigation ad after every [showNavigationAdAfterCount] navigation
   /// if [showNavigationAdAfterCount] is not provided, it will show ad after every 1 navigation
   /// This will only show interstitial ad
   bool showAdOnNavigation() {
-    if (_navigationCount % (_showNavigationAdAfterCount) == 0) {
+    if ((_navigationCount % (_showNavigationAdAfterCount) == 0) &&
+        _navigationCount > 0) {
       _navigationCount++;
       return showAd(AdUnitType.interstitial);
     } else {
@@ -549,7 +630,7 @@ class ApslAds {
 
   /// Update add index count after showing ad
   /// This method is called automatically after showing ad
-  void updateAdIndex(AdUnitType adUnitType) {
+  void _updateAdIndex(AdUnitType adUnitType) {
     switch (adUnitType) {
       case AdUnitType.rewarded:
         _rewardedAdIndex++;

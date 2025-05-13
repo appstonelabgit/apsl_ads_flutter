@@ -7,14 +7,13 @@ class ApslSequenceBannerAd extends StatefulWidget {
   final List<AdNetwork> orderOfAdNetworks;
   final AdSize adSize;
   const ApslSequenceBannerAd(
-      {Key? key,
+      {super.key,
       this.orderOfAdNetworks = const [
         AdNetwork.admob,
         AdNetwork.facebook,
         AdNetwork.unity,
       ],
-      this.adSize = AdSize.banner})
-      : super(key: key);
+      this.adSize = AdSize.banner});
 
   @override
   State<ApslSequenceBannerAd> createState() => _ApslSequenceBannerAdState();
@@ -72,7 +71,7 @@ class _ApslSequenceBannerAdState extends State<ApslSequenceBannerAd> {
     final adIdManager = ApslAds.instance.adIdManager;
     return adIdManager.appAdIds.any(
       (adIds) =>
-          adIds.adNetwork == adNetwork.name &&
+          adIds.adNetwork == adNetwork &&
           adIds.bannerId != null &&
           adIds.bannerId!.isNotEmpty,
     );

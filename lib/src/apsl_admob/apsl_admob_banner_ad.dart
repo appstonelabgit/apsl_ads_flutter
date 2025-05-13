@@ -9,32 +9,37 @@ class ApslAdmobBannerAd extends ApslAdBase {
   final AdSize adSize;
 
   ApslAdmobBannerAd(
-    String adUnitId, {
+    super.adUnitId, {
     AdRequest? adRequest,
     this.adSize = AdSize.banner,
-  })  : _adRequest = adRequest ?? const AdRequest(),
-        super(adUnitId);
+  }) : _adRequest = adRequest ?? const AdRequest();
 
   BannerAd? _bannerAd;
   bool _isAdLoaded = false;
+  bool _isLoading = false;
 
   @override
   AdUnitType get adUnitType => AdUnitType.banner;
-  @override
-  AdNetwork get adNetwork => AdNetwork.admob;
 
   @override
-  void dispose() {
-    _isAdLoaded = false;
-    _bannerAd?.dispose();
-    _bannerAd = null;
-  }
+  AdNetwork get adNetwork => AdNetwork.admob;
 
   @override
   bool get isAdLoaded => _isAdLoaded;
 
   @override
+  void dispose() {
+    _isAdLoaded = false;
+    _isLoading = false;
+    _bannerAd?.dispose();
+    _bannerAd = null;
+  }
+
+  @override
   Future<void> load() async {
+    if (_isLoading || _isAdLoaded) return;
+
+    _isLoading = true;
     await _bannerAd?.dispose();
     _bannerAd = null;
     _isAdLoaded = false;
@@ -44,16 +49,27 @@ class ApslAdmobBannerAd extends ApslAdBase {
       adUnitId: adUnitId,
       listener: BannerAdListener(
         onAdLoaded: (Ad ad) {
-          _bannerAd = ad as BannerAd?;
+          _bannerAd = ad as BannerAd;
           _isAdLoaded = true;
+          _isLoading = false;
           onAdLoaded?.call(adNetwork, adUnitType, ad);
           onBannerAdReadyForSetState?.call(adNetwork, adUnitType, ad);
         },
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          _bannerAd = null;
           _isAdLoaded = false;
-          onAdFailedToLoad?.call(adNetwork, adUnitType, ad, error.toString());
+          _isLoading = false;
+          onAdFailedToLoad?.call(
+            adNetwork,
+            adUnitType,
+            ad,
+            errorMessage: error.toString(),
+          );
           ad.dispose();
+
+          // Retry after delay (for transient errors)
+          Future.delayed(const Duration(seconds: 5), () {
+            if (!_isAdLoaded) load();
+          });
         },
         onAdOpened: (Ad ad) => onAdClicked?.call(adNetwork, adUnitType, ad),
         onAdClosed: (Ad ad) => onAdDismissed?.call(adNetwork, adUnitType, ad),
@@ -61,11 +77,10 @@ class ApslAdmobBannerAd extends ApslAdBase {
       ),
       request: _adRequest,
     )..load();
-    // _bannerAd?.load();
   }
 
   @override
-  dynamic show() {
+  Widget show() {
     if (_bannerAd == null || !_isAdLoaded) {
       load();
       return SizedBox(

@@ -6,15 +6,21 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class ApslAdmobRewardedAd extends ApslAdBase {
   final AdRequest _adRequest;
   final bool _immersiveModeEnabled;
+  final bool _preLoadRewardedAds;
 
-  ApslAdmobRewardedAd(
-    String adUnitId,
-    this._adRequest,
-    this._immersiveModeEnabled,
-  ) : super(adUnitId);
+  ApslAdmobRewardedAd({
+    required String adUnitId,
+    required AdRequest adRequest,
+    required bool immersiveModeEnabled,
+    required bool preLoadRewardedAds,
+  })  : _adRequest = adRequest,
+        _immersiveModeEnabled = immersiveModeEnabled,
+        _preLoadRewardedAds = preLoadRewardedAds,
+        super(adUnitId);
 
   RewardedAd? _rewardedAd;
   bool _isAdLoaded = false;
+  bool _isLoading = false;
 
   @override
   AdNetwork get adNetwork => AdNetwork.admob;
@@ -27,34 +33,53 @@ class ApslAdmobRewardedAd extends ApslAdBase {
 
   @override
   void dispose() {
-    _isAdLoaded = false;
     _rewardedAd?.dispose();
     _rewardedAd = null;
+    _isAdLoaded = false;
+    _isLoading = false;
   }
 
   @override
   Future<void> load() async {
-    if (_isAdLoaded) return;
+    if (_isLoading || _isAdLoaded) return;
+
+    _isLoading = true;
+
     await RewardedAd.load(
-        adUnitId: adUnitId,
-        request: _adRequest,
-        rewardedAdLoadCallback:
-            RewardedAdLoadCallback(onAdLoaded: (RewardedAd ad) {
+      adUnitId: adUnitId,
+      request: _adRequest,
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (RewardedAd ad) {
+          _rewardedAd?.dispose(); // Clean up if somehow not null
           _rewardedAd = ad;
           _isAdLoaded = true;
+          _isLoading = false;
           onAdLoaded?.call(adNetwork, adUnitType, ad);
-        }, onAdFailedToLoad: (LoadAdError error) {
+        },
+        onAdFailedToLoad: (LoadAdError error) {
           _rewardedAd = null;
           _isAdLoaded = false;
+          _isLoading = false;
           onAdFailedToLoad?.call(
-              adNetwork, adUnitType, error, error.toString());
-        }));
+            adNetwork,
+            adUnitType,
+            error,
+            errorMessage: error.toString(),
+          );
+
+          // Optional: Retry after delay
+          Future.delayed(const Duration(seconds: 5), () {
+            if (!_isAdLoaded) load();
+          });
+        },
+      ),
+    );
   }
 
   @override
   dynamic show() {
     final ad = _rewardedAd;
-    if (ad == null) return;
+    if (ad == null || !_isAdLoaded) return;
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (RewardedAd ad) {
@@ -62,22 +87,42 @@ class ApslAdmobRewardedAd extends ApslAdBase {
       },
       onAdDismissedFullScreenContent: (RewardedAd ad) {
         onAdDismissed?.call(adNetwork, adUnitType, ad);
-
         ad.dispose();
-        load();
+        _rewardedAd = null;
+        _isAdLoaded = false;
+
+        if (_preLoadRewardedAds) {
+          load(); // Preload next ad
+        }
       },
       onAdFailedToShowFullScreenContent: (RewardedAd ad, AdError error) {
-        onAdFailedToShow?.call(adNetwork, adUnitType, ad, error.toString());
-
+        onAdFailedToShow?.call(
+          adNetwork,
+          adUnitType,
+          ad,
+          errorMessage: error.toString(),
+        );
         ad.dispose();
-        load();
+        _rewardedAd = null;
+        _isAdLoaded = false;
+
+        if (_preLoadRewardedAds) {
+          load(); // Try again
+        }
       },
     );
 
     ad.setImmersiveMode(_immersiveModeEnabled);
+
     ad.show(onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
-      onEarnedReward?.call(adNetwork, adUnitType, reward.type, reward.amount);
+      onEarnedReward?.call(
+        adNetwork,
+        adUnitType,
+        reward.type,
+        rewardAmount: reward.amount,
+      );
     });
+
     _rewardedAd = null;
     _isAdLoaded = false;
   }

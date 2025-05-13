@@ -9,11 +9,12 @@ class ApslUnityBannerAd extends ApslAdBase {
   final AdSize? adSize;
 
   ApslUnityBannerAd(
-    String adUnitId, {
+    super.adUnitId, {
     this.adSize,
-  }) : super(adUnitId);
+  });
 
   bool _isAdLoaded = false;
+  bool _isLoading = false;
 
   @override
   AdNetwork get adNetwork => AdNetwork.unity;
@@ -22,55 +23,63 @@ class ApslUnityBannerAd extends ApslAdBase {
   AdUnitType get adUnitType => AdUnitType.banner;
 
   @override
-  void dispose() => _isAdLoaded = false;
-
-  @override
   bool get isAdLoaded => _isAdLoaded;
 
   @override
-  Future<void> load() async {}
+  void dispose() {
+    _isAdLoaded = false;
+    _isLoading = false;
+    // There's no explicit dispose for UnityBannerAd — it's widget based.
+  }
+
+  /// Unity doesn't expose a separate preload step for banners. This is a placeholder to maintain consistency.
+  @override
+  Future<void> load() async {
+    if (_isAdLoaded || _isLoading) return;
+    _isLoading = true;
+    // Ad loads when the widget is built, so `show()` handles the actual loading.
+  }
 
   @override
-  dynamic show() {
-    final ad = UnityBannerAd(
-      size: adSize == null
-          ? BannerSize.standard
-          : BannerSize(width: adSize!.width, height: adSize!.height),
-      placementId: adUnitId,
-      onLoad: onCompleteUnityBannerAd,
-      onFailed: onFailedUnityBannerAd,
-      onClick: onClickUnityBannerAd,
+  Widget show() {
+    final size = adSize == null
+        ? BannerSize.standard
+        : BannerSize(width: adSize!.width, height: adSize!.height);
+
+    return Container(
+      alignment: Alignment.center,
+      height: size.height.toDouble(),
+      child: UnityBannerAd(
+        placementId: adUnitId,
+        size: size,
+        onLoad: _onBannerLoad,
+        onFailed: _onBannerLoadFail,
+        onClick: _onBannerClick,
+      ),
     );
-
-    return Container(alignment: Alignment.center, child: ad);
   }
 
-  void onCompleteLoadUnityAd(String s) {
+  void _onBannerLoad(dynamic args) {
     _isAdLoaded = true;
-    onAdLoaded?.call(adNetwork, adUnitType, null);
-  }
-
-  void onFailedToLoadUnityAd(
-      String placementId, UnityAdsLoadError error, String errorMessage) {
-    _isAdLoaded = false;
-    onAdFailedToLoad?.call(
-        adNetwork, adUnitType, error, 'Error occurred while loading unity ad');
-  }
-
-  void onCompleteUnityBannerAd(args) {
-    _isAdLoaded = false;
-    onAdShowed?.call(adNetwork, adUnitType, args);
+    _isLoading = false;
+    onAdLoaded?.call(adNetwork, adUnitType, args);
     onBannerAdReadyForSetState?.call(adNetwork, adUnitType, args);
+    onAdShowed?.call(adNetwork, adUnitType, args);
   }
 
-  void onFailedUnityBannerAd(
+  void _onBannerLoadFail(
       String placementId, UnityAdsBannerError error, String errorMessage) {
     _isAdLoaded = false;
-    onAdFailedToShow?.call(adNetwork, adUnitType, error,
-        'Error occurred while loading unity banner ad');
+    _isLoading = false;
+    onAdFailedToLoad?.call(
+      adNetwork,
+      adUnitType,
+      error,
+      errorMessage: 'Failed to load Unity banner [$placementId]: $errorMessage',
+    );
   }
 
-  void onClickUnityBannerAd(String placementId) {
-    onAdClicked?.call(adNetwork, adUnitType, null);
+  void _onBannerClick(String placementId) {
+    onAdClicked?.call(adNetwork, adUnitType, placementId);
   }
 }
