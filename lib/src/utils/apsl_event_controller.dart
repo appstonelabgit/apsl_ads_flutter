@@ -1,13 +1,21 @@
 import 'dart:async';
-
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
+import 'package:flutter/foundation.dart';
 
 class ApslEventController {
-  Stream<AdEvent> get onEvent => _onEventController.stream;
+  final bool debugLogging;
+
+  ApslEventController({this.debugLogging = false});
+
   final _onEventController = StreamController<AdEvent>.broadcast();
+  Stream<AdEvent> get onEvent => _onEventController.stream;
+
+  void dispose() {
+    _onEventController.close();
+  }
 
   void fireNetworkInitializedEvent(AdNetwork adNetwork, bool status) {
-    _onEventController.add(AdEvent(
+    _addEvent(AdEvent(
       type: AdEventType.adNetworkInitialized,
       adNetwork: adNetwork,
       data: status,
@@ -23,6 +31,16 @@ class ApslEventController {
     ad.onEarnedReward = _onEarnedRewardMethod;
   }
 
+  void _addEvent(AdEvent event) {
+    if (!_onEventController.isClosed) {
+      _onEventController.sink.add(event);
+      if (debugLogging) {
+        debugPrint(
+            '[ApslEventController] => ${event.type} (${event.adNetwork})');
+      }
+    }
+  }
+
   void _onAdLoadedMethod(
     AdNetwork adNetwork,
     AdUnitType adUnitType,
@@ -31,7 +49,7 @@ class ApslEventController {
     String? rewardType,
     num? rewardAmount,
   }) {
-    _onEventController.add(AdEvent(
+    _addEvent(AdEvent(
       type: AdEventType.adLoaded,
       adNetwork: adNetwork,
       adUnitType: adUnitType,
@@ -47,7 +65,7 @@ class ApslEventController {
     String? rewardType,
     num? rewardAmount,
   }) {
-    _onEventController.add(AdEvent(
+    _addEvent(AdEvent(
       type: AdEventType.adShowed,
       adNetwork: adNetwork,
       adUnitType: adUnitType,
@@ -63,7 +81,7 @@ class ApslEventController {
     String? rewardType,
     num? rewardAmount,
   }) {
-    _onEventController.add(AdEvent(
+    _addEvent(AdEvent(
       type: AdEventType.adFailedToLoad,
       adNetwork: adNetwork,
       adUnitType: adUnitType,
@@ -80,7 +98,7 @@ class ApslEventController {
     String? rewardType,
     num? rewardAmount,
   }) {
-    _onEventController.add(AdEvent(
+    _addEvent(AdEvent(
       type: AdEventType.adFailedToShow,
       adNetwork: adNetwork,
       adUnitType: adUnitType,
@@ -97,7 +115,7 @@ class ApslEventController {
     String? rewardType,
     num? rewardAmount,
   }) {
-    _onEventController.add(AdEvent(
+    _addEvent(AdEvent(
       type: AdEventType.adDismissed,
       adNetwork: adNetwork,
       adUnitType: adUnitType,
@@ -113,11 +131,14 @@ class ApslEventController {
     String? errorMessage,
     num? rewardAmount,
   }) {
-    _onEventController.add(AdEvent(
+    _addEvent(AdEvent(
       type: AdEventType.earnedReward,
       adNetwork: adNetwork,
       adUnitType: adUnitType,
-      data: {'rewardType': rewardType, 'rewardAmount': rewardAmount},
+      data: {
+        'rewardType': rewardType,
+        'rewardAmount': rewardAmount,
+      },
     ));
   }
 }

@@ -1,44 +1,43 @@
-// Copyright 2021 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
+import 'dart:async';
 import 'package:apsl_ads_flutter/src/apsl_admob/apsl_admob_app_open_ad.dart';
 import 'package:apsl_ads_flutter/src/utils/test_ads_id_manager.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-/// Manages the app lifecycle to display app open ads.
-/// It listens to app state changes and triggers the ad display whenever
-/// the app comes to the foreground.
+/// Reacts to app lifecycle changes to show App Open Ads appropriately.
 class AppLifecycleReactor {
-  // Reference to the manager handling app open ads for AdMob.
   final ApslAdmobAppOpenAd appOpenAdManager;
+  StreamSubscription<AppState>? _subscription;
+  bool _hasJustResumed = false;
 
-  /// Constructs the lifecycle reactor with a provided [appOpenAdManager].
   AppLifecycleReactor({required this.appOpenAdManager});
 
-  /// Initiates the listener for app state changes.
+  /// Start listening to foreground/background state changes.
   void listenToAppStateChanges() {
     AppStateEventNotifier.startListening();
-    AppStateEventNotifier.appStateStream
-        .forEach((state) => _onAppStateChanged(state));
+
+    // Use `listen()` instead of `forEach()` to be able to cancel the subscription
+    _subscription =
+        AppStateEventNotifier.appStateStream.listen(_onAppStateChanged);
   }
 
-  /// Internal handler for app state changes.
-  /// Triggers ad display when the app transitions to the foreground.
-  void _onAppStateChanged(AppState appState) {
-    if (appState == AppState.foreground) {
-      if (forceStopToLoadAds) return;
-      appOpenAdManager.show();
+  /// Cleanup on app shutdown to prevent leaks.
+  void dispose() {
+    _subscription?.cancel();
+    _subscription = null;
+  }
+
+  /// Called whenever the app state changes.
+  void _onAppStateChanged(AppState state) {
+    if (state == AppState.foreground) {
+      if (forceStopToLoadAds || _hasJustResumed) return;
+
+      _hasJustResumed = true;
+
+      /// Give a brief delay to allow UI restoration (optional UX buffer)
+      Future.delayed(const Duration(milliseconds: 300), () {
+        _hasJustResumed = false;
+        appOpenAdManager.show();
+      });
     }
   }
 }

@@ -18,7 +18,12 @@ class BadgedBanner extends StatelessWidget {
         alignment: AlignmentDirectional.topStart,
         child: Container(
           height: adSize.height.toDouble(),
-          color: Theme.of(context).primaryColor.withOpacity(0.05),
+          color: Theme.of(context).primaryColor.withValues(
+                alpha: (0.05 * 255).round().toDouble(),
+                red: Theme.of(context).primaryColor.r,
+                green: Theme.of(context).primaryColor.g,
+                blue: Theme.of(context).primaryColor.b,
+              ),
           child: child,
         ),
       ),

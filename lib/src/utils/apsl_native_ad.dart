@@ -23,54 +23,49 @@ class ApslNativeAd extends StatefulWidget {
 
 class _ApslNativeAdState extends State<ApslNativeAd> {
   ApslAdBase? _nativeAd;
+  late AdNetwork _currentNetwork;
+  late TemplateType _currentTemplateType;
 
   @override
-  Widget build(BuildContext context) {
-    return _nativeAd?.show() ??
-        Container(
-          height:
-              (widget.templateType ?? TemplateType.small) == TemplateType.small
-                  ? 90
-                  : 200,
-        );
+  void initState() {
+    super.initState();
+    _currentNetwork = widget.adNetwork;
+    _currentTemplateType = widget.templateType ?? TemplateType.small;
+    _initNative();
   }
 
   @override
   void didUpdateWidget(covariant ApslNativeAd oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    createNative();
-    _nativeAd?.onNativeAdReadyForSetState = onNativeAdReadyForSetState;
+    final updatedTemplate = widget.templateType ?? TemplateType.small;
+
+    if (widget.adNetwork != _currentNetwork ||
+        updatedTemplate != _currentTemplateType) {
+      _currentNetwork = widget.adNetwork;
+      _currentTemplateType = updatedTemplate;
+      _initNative();
+    }
   }
 
-  void createNative() {
+  void _initNative() {
+    _nativeAd?.dispose();
+
     _nativeAd = ApslAds.instance.createNative(
-      adNetwork: widget.adNetwork,
+      adNetwork: _currentNetwork,
       nativeTemplateStyle: widget.nativeTemplateStyle,
-      templateType: widget.templateType,
+      templateType: _currentTemplateType,
       nativeAdBorderColor: widget.nativeAdBorderColor,
       nativeAdBorderRadius: widget.nativeAdBorderRadius,
     );
+
+    _nativeAd?.onAdLoaded = _onNativeAdReady;
+    _nativeAd?.onNativeAdReadyForSetState = _onNativeAdReady;
+
     _nativeAd?.load();
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    createNative();
-
-    _nativeAd?.onAdLoaded = onNativeAdReadyForSetState;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _nativeAd?.dispose();
-    _nativeAd = null;
-  }
-
-  void onNativeAdReadyForSetState(
+  void _onNativeAdReady(
     AdNetwork adNetwork,
     AdUnitType adUnitType,
     Object? data, {
@@ -78,6 +73,23 @@ class _ApslNativeAdState extends State<ApslNativeAd> {
     String? rewardType,
     num? rewardAmount,
   }) {
-    setState(() {});
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _nativeAd?.dispose();
+    _nativeAd = null;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _nativeAd?.show() ?? _fallbackContainer();
+  }
+
+  Widget _fallbackContainer() {
+    final height = (_currentTemplateType == TemplateType.small) ? 90.0 : 200.0;
+    return SizedBox(height: height);
   }
 }

@@ -3,13 +3,11 @@ import 'package:apsl_ads_flutter/src/enums/ad_network.dart';
 import 'package:apsl_ads_flutter/src/enums/ad_unit_type.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-/// A class encapsulating the logic for AdMob's Rewarded Ads.
 class ApslAdmobRewardedAd extends ApslAdBase {
   final AdRequest _adRequest;
   final bool _immersiveModeEnabled;
   final bool _preLoadRewardedAds;
 
-  /// Constructor for creating an instance of ApslAdmobRewardedAd.
   ApslAdmobRewardedAd({
     required String adUnitId,
     required AdRequest adRequest,
@@ -20,54 +18,68 @@ class ApslAdmobRewardedAd extends ApslAdBase {
         _preLoadRewardedAds = preLoadRewardedAds,
         super(adUnitId);
 
-  RewardedAd? _rewardedAd; // Reference to the loaded rewarded ad
-  bool _isAdLoaded = false; // Flag to check if the ad has been loaded
+  RewardedAd? _rewardedAd;
+  bool _isAdLoaded = false;
+  bool _isLoading = false;
 
-  // Overridden getters
   @override
   AdNetwork get adNetwork => AdNetwork.admob;
+
   @override
   AdUnitType get adUnitType => AdUnitType.rewarded;
+
   @override
   bool get isAdLoaded => _isAdLoaded;
 
-  /// Disposes the rewarded ad to release any resources.
   @override
   void dispose() {
-    _isAdLoaded = false;
     _rewardedAd?.dispose();
     _rewardedAd = null;
+    _isAdLoaded = false;
+    _isLoading = false;
   }
 
-  /// Loads the rewarded ad.
   @override
   Future<void> load() async {
-    if (_isAdLoaded) return;
+    if (_isLoading || _isAdLoaded) return;
+
+    _isLoading = true;
+
     await RewardedAd.load(
-        adUnitId: adUnitId,
-        request: _adRequest,
-        rewardedAdLoadCallback:
-            RewardedAdLoadCallback(onAdLoaded: (RewardedAd ad) {
+      adUnitId: adUnitId,
+      request: _adRequest,
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (RewardedAd ad) {
+          _rewardedAd?.dispose(); // Clean up if somehow not null
           _rewardedAd = ad;
           _isAdLoaded = true;
+          _isLoading = false;
           onAdLoaded?.call(adNetwork, adUnitType, ad);
-        }, onAdFailedToLoad: (LoadAdError error) {
+        },
+        onAdFailedToLoad: (LoadAdError error) {
           _rewardedAd = null;
           _isAdLoaded = false;
+          _isLoading = false;
           onAdFailedToLoad?.call(
             adNetwork,
             adUnitType,
             error,
             errorMessage: error.toString(),
           );
-        }));
+
+          // Optional: Retry after delay
+          Future.delayed(const Duration(seconds: 5), () {
+            if (!_isAdLoaded) load();
+          });
+        },
+      ),
+    );
   }
 
-  /// Displays the loaded rewarded ad.
   @override
   dynamic show() {
     final ad = _rewardedAd;
-    if (ad == null) return;
+    if (ad == null || !_isAdLoaded) return;
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (RewardedAd ad) {
@@ -75,9 +87,13 @@ class ApslAdmobRewardedAd extends ApslAdBase {
       },
       onAdDismissedFullScreenContent: (RewardedAd ad) {
         onAdDismissed?.call(adNetwork, adUnitType, ad);
-
         ad.dispose();
-        if (_preLoadRewardedAds) load(); // Option to preload the next ad
+        _rewardedAd = null;
+        _isAdLoaded = false;
+
+        if (_preLoadRewardedAds) {
+          load(); // Preload next ad
+        }
       },
       onAdFailedToShowFullScreenContent: (RewardedAd ad, AdError error) {
         onAdFailedToShow?.call(
@@ -86,13 +102,18 @@ class ApslAdmobRewardedAd extends ApslAdBase {
           ad,
           errorMessage: error.toString(),
         );
-
         ad.dispose();
-        if (_preLoadRewardedAds) load(); // Option to preload the next ad
+        _rewardedAd = null;
+        _isAdLoaded = false;
+
+        if (_preLoadRewardedAds) {
+          load(); // Try again
+        }
       },
     );
 
     ad.setImmersiveMode(_immersiveModeEnabled);
+
     ad.show(onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
       onEarnedReward?.call(
         adNetwork,
@@ -101,6 +122,7 @@ class ApslAdmobRewardedAd extends ApslAdBase {
         rewardAmount: reward.amount,
       );
     });
+
     _rewardedAd = null;
     _isAdLoaded = false;
   }

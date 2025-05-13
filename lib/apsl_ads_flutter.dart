@@ -1,4 +1,4 @@
-library apsl_ads_flutter;
+library;
 
 export 'package:apsl_ads_flutter/src/apsl_ad_base.dart';
 export 'package:apsl_ads_flutter/src/apsl_admob/app_lifecycle_reactor.dart';

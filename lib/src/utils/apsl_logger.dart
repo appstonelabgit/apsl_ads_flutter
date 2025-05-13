@@ -1,14 +1,15 @@
 import 'dart:async';
 
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart' as admob;
 import 'package:logger/logger.dart';
 
-/// [ApslLogger] is used to listen to the callbacks in stream & show logs
+/// [ApslLogger] listens to [ApslAds] events and logs ad lifecycle changes.
 class ApslLogger {
-  /// [Logger] is used to show logs in console for ApslAds
-  final _logger = Logger();
-  StreamSubscription? streamSubscription;
+  final Logger _logger = Logger();
+  StreamSubscription<AdEvent>? streamSubscription;
 
+  /// Enables or disables ad event logging.
   void enable(bool enabled) {
     streamSubscription?.cancel();
     if (enabled) {
@@ -16,24 +17,32 @@ class ApslLogger {
     }
   }
 
+  /// Call this to release stream resources (e.g., in dispose).
+  void dispose() {
+    streamSubscription?.cancel();
+    streamSubscription = null;
+  }
+
   void logInfo(String message) => _logger.i(message);
 
   void _onAdNetworkInitialized(AdEvent event) {
-    if (event.data == true) {
-      _logger.i(
-          "${event.adNetwork.value} has been initialized and is ready to use.");
-    } else {
-      _logger.e("${event.adNetwork.value} could not be initialized.");
-    }
+    final network = event.adNetwork.value;
+    final status = event.data == true;
+    _logger.log(
+      status ? Level.info : Level.error,
+      '$network has ${status ? "been initialized" : "failed to initialize"}.',
+    );
   }
 
   void _onAdLoaded(AdEvent event) {
     String message =
-        "${event.adUnitType?.value} ads for ${event.adNetwork.value} have been loaded.";
+        '${event.adUnitType?.value ?? "unknown"} ad loaded for ${event.adNetwork.value}.';
+
     if (event.adNetwork == AdNetwork.admob) {
-      final ad = event.data as Ad?;
-      message +=
-          ' adapter status: ${ad?.responseInfo?.mediationAdapterClassName}';
+      final ad = event.data as admob.Ad?;
+      final adapter =
+          ad?.responseInfo?.mediationAdapterClassName ?? "unknown adapter";
+      message += ' Adapter: $adapter';
     }
 
     _logger.i(message);
@@ -41,28 +50,32 @@ class ApslLogger {
 
   void _onAdFailedToLoad(AdEvent event) {
     _logger.e(
-        "${event.adUnitType?.value} ads for ${event.adNetwork.value} could not be loaded.\nERROR: ${event.error}");
+        '${event.adUnitType?.value ?? "unknown"} ad failed to load for ${event.adNetwork.value}.\nError: ${event.error ?? "unknown"}');
   }
 
   void _onAdShowed(AdEvent event) {
     _logger.i(
-        "${event.adUnitType?.value} ad for ${event.adNetwork.value} has been shown.");
+        '${event.adUnitType?.value ?? "unknown"} ad shown for ${event.adNetwork.value}.');
   }
 
   void _onAdFailedShow(AdEvent event) {
     _logger.e(
-        "${event.adUnitType?.value} ad for ${event.adNetwork.value} could not be showed.\nERROR: ${event.error}");
+        '${event.adUnitType?.value ?? "unknown"} ad failed to show for ${event.adNetwork.value}.\nError: ${event.error ?? "unknown"}');
   }
 
   void _onAdDismissed(AdEvent event) {
     _logger.i(
-        "${event.adUnitType?.value} ad for ${event.adNetwork.value} has been dismissed.");
+        '${event.adUnitType?.value ?? "unknown"} ad dismissed for ${event.adNetwork.value}.');
   }
 
   void _onEarnedReward(AdEvent event) {
-    final dataMap = event.data as Map<String, dynamic>?;
+    final rewardData =
+        event.data is Map ? event.data as Map : <String, dynamic>{};
+    final rewardType = rewardData['rewardType'] ?? "unknown";
+    final rewardAmount = rewardData['rewardAmount'] ?? "unknown";
+
     _logger.i(
-        "User has earned ${dataMap?['rewardAmount']} of ${dataMap?['rewardType']} from ${event.adNetwork.value}");
+        'User earned $rewardAmount of "$rewardType" from ${event.adNetwork.value}.');
   }
 
   void _onAdEvent(AdEvent event) {
@@ -73,9 +86,6 @@ class ApslLogger {
       case AdEventType.adLoaded:
         _onAdLoaded(event);
         break;
-      case AdEventType.adDismissed:
-        _onAdDismissed(event);
-        break;
       case AdEventType.adShowed:
         _onAdShowed(event);
         break;
@@ -84,6 +94,9 @@ class ApslLogger {
         break;
       case AdEventType.adFailedToShow:
         _onAdFailedShow(event);
+        break;
+      case AdEventType.adDismissed:
+        _onAdDismissed(event);
         break;
       case AdEventType.earnedReward:
         _onEarnedReward(event);

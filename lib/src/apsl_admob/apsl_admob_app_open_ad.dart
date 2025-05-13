@@ -1,21 +1,18 @@
 import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 import 'package:apsl_ads_flutter/src/utils/shared_preferences.dart';
 
-/// A class that encapsulates the logic for AdMob's App Open Ads.
 class ApslAdmobAppOpenAd extends ApslAdBase {
-  final AdRequest _adRequest;
-  AppOpenAd? _appOpenAd;
-  bool _isShowingAd = false;
-  final bool _hideAppOpenAdWhileAppInstall;
-
-  /// Maximum time duration allowed between loading and showing the ad.
+  final AdRequest adRequest;
+  final bool blockAppOpen;
   final Duration maxCacheDuration = const Duration(hours: 4);
 
-  /// Timestamp to keep track when the ad was loaded.
+  AppOpenAd? _appOpenAd;
   DateTime? _appOpenLoadTime;
 
-  ApslAdmobAppOpenAd(
-      super.adUnitId, this._adRequest, this._hideAppOpenAdWhileAppInstall);
+  bool _isShowingAd = false;
+  bool _isLoading = false;
+
+  ApslAdmobAppOpenAd(super.adUnitId, this.adRequest, this.blockAppOpen);
 
   @override
   AdNetwork get adNetwork => AdNetwork.admob;
@@ -26,103 +23,113 @@ class ApslAdmobAppOpenAd extends ApslAdBase {
   @override
   bool get isAdLoaded => _appOpenAd != null;
 
-  /// Disposes off any active ad to free up resources.
   @override
   void dispose() {
     _appOpenAd?.dispose();
     _appOpenAd = null;
+    _isShowingAd = false;
+    _isLoading = false;
   }
 
-  /// Initiates the loading of the ad.
   @override
   Future<void> load() => _load(showAdOnLoad: true);
 
-  /// Internal method to load an ad. If [showAdOnLoad] is true, it will show the ad immediately after loading.
-  Future<void> _load({bool showAdOnLoad = false}) {
-    // Handle first app open logic
-    if (_hideAppOpenAdWhileAppInstall &&
-        SharedPrefHelper.getIsAppOpensFirstTime) {
-      SharedPrefHelper.setAppOpensFirstTimeStatus(false);
-      return Future.value();
-    }
+  Future<void> _load({bool showAdOnLoad = false}) async {
+    if (isAdLoaded || forceStopToLoadAds || _isLoading) return;
 
-    if (isAdLoaded || forceStopToLoadAds) {
-      return Future.value();
-    }
+    _isLoading = true;
 
-    return AppOpenAd.load(
+    await AppOpenAd.load(
       adUnitId: adUnitId,
-      request: _adRequest,
+      request: adRequest,
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (AppOpenAd ad) {
-          _appOpenLoadTime = DateTime.now();
+          _appOpenAd?.dispose();
           _appOpenAd = ad;
+          _appOpenLoadTime = DateTime.now();
+          _isLoading = false;
           onAdLoaded?.call(adNetwork, adUnitType, ad);
+
           if (showAdOnLoad) show();
         },
         onAdFailedToLoad: (LoadAdError error) {
           _appOpenAd = null;
+          _isLoading = false;
           onAdFailedToLoad?.call(adNetwork, adUnitType, error,
               errorMessage: error.toString());
+
+          // Retry after delay
+          Future.delayed(const Duration(seconds: 10), () {
+            if (!isAdLoaded) _load(showAdOnLoad: false);
+          });
         },
       ),
     );
   }
 
-  /// Shows the loaded ad if it is ready and not expired.
   @override
-  show() async {
-    // Handle cases where the ad is not loaded, already being displayed, or has expired.
+  void show() {
     if (!isAdLoaded) {
-      // If no ad is loaded, initiate load and plan to show it.
-      onAdFailedToShow?.call(adNetwork, adUnitType, null,
-          errorMessage:
-              'Tried to show ad but no ad was loaded, now sent a call for loading and will show automatically');
-      _load(showAdOnLoad: true);
-      return;
-    }
-    if (_isShowingAd) {
-      onAdFailedToShow?.call(adNetwork, adUnitType, null,
-          errorMessage: 'Tried to show ad while already showing an ad.');
-      return;
-    }
-    if (_appOpenLoadTime != null &&
-        DateTime.now().subtract(maxCacheDuration).isAfter(_appOpenLoadTime!)) {
-      // If ad is expired, initiate load and plan to show it.
-      onAdFailedToShow?.call(adNetwork, adUnitType, null,
-          errorMessage:
-              'Ad was loaded before $maxCacheDuration, hence sent a call for loading and will show automatically');
+      onAdFailedToShow?.call(
+        adNetwork,
+        adUnitType,
+        null,
+        errorMessage:
+            'No ad loaded. Triggered load and will auto-show if successful.',
+      );
       _load(showAdOnLoad: true);
       return;
     }
 
-    // Define the full screen content callbacks for the ad.
+    if (_isShowingAd) {
+      onAdFailedToShow?.call(
+        adNetwork,
+        adUnitType,
+        null,
+        errorMessage: 'Ad is already being shown.',
+      );
+      return;
+    }
+
+    if (_appOpenLoadTime != null &&
+        DateTime.now().difference(_appOpenLoadTime!) > maxCacheDuration) {
+      onAdFailedToShow?.call(
+        adNetwork,
+        adUnitType,
+        null,
+        errorMessage:
+            'Cached ad expired. Loading new one and will show automatically.',
+      );
+      _load(showAdOnLoad: true);
+      return;
+    }
+
     _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (AppOpenAd ad) {
-        print("MB : onAdShowedFullScreenContent");
-
         _isShowingAd = true;
         onAdShowed?.call(adNetwork, adUnitType, ad);
       },
       onAdDismissedFullScreenContent: (AppOpenAd ad) {
         _isShowingAd = false;
-        onAdDismissed?.call(adNetwork, adUnitType, ad);
         ad.dispose();
         _appOpenAd = null;
+        onAdDismissed?.call(adNetwork, adUnitType, ad);
       },
       onAdFailedToShowFullScreenContent: (AppOpenAd ad, AdError error) {
         _isShowingAd = false;
-        onAdFailedToShow?.call(adNetwork, adUnitType, ad,
-            errorMessage: error.toString());
         ad.dispose();
         _appOpenAd = null;
+        onAdFailedToShow?.call(
+          adNetwork,
+          adUnitType,
+          ad,
+          errorMessage: error.toString(),
+        );
       },
     );
-    print("MB : Came to show appOpenAdIds");
 
-    // Display the ad.
-    _appOpenAd?.show();
-    _appOpenAd = null;
-    _isShowingAd = false;
+    _appOpenAd!.show();
+
+    // Don't reset ad or _isShowingAd here — only inside callbacks
   }
 }

@@ -5,23 +5,28 @@ abstract class AdsIdManager {
 
   List<AppAdIds> get appAdIds;
 
-  AppAdIds getAppIds(AdNetwork adNetwork) =>
-      appAdIds.firstWhere((element) => element.adNetwork == adNetwork.name);
+  /// Returns ad IDs for a given network, or throws if not found.
+  AppAdIds getAppIds(AdNetwork adNetwork) {
+    return appAdIds.firstWhere(
+      (element) => element.adNetwork == adNetwork,
+      orElse: () =>
+          throw Exception('AdNetwork ${adNetwork.name} not configured'),
+    );
+  }
 }
 
 class AppAdIds {
-  /// Always pass appId, if adnetwork don't have app id pass it as empty string
+  /// Always pass appId, if adnetwork doesn't require app id, pass an empty string
   final String appId;
 
-  /// if id is null, it will not be implemented
   final String? appOpenId;
   final String? interstitialId;
   final String? rewardedId;
   final String? bannerId;
   final String? nativeId;
 
-  /// Ad network type
-  final String adNetwork;
+  /// Strongly typed enum for ad network
+  final AdNetwork adNetwork;
 
   const AppAdIds({
     required this.appId,
@@ -33,10 +38,11 @@ class AppAdIds {
     this.nativeId,
   });
 
+  /// Factory for deserializing from JSON with string enum fallback
   factory AppAdIds.fromJson(Map<dynamic, dynamic> json) {
     return AppAdIds(
       appId: json['appId'] ?? '',
-      adNetwork: json['adNetwork'] ?? '',
+      adNetwork: getAdNetworkFromString(json['adNetwork'] ?? 'any'),
       appOpenId: json['appOpenId'],
       interstitialId: json['interstitialId'],
       rewardedId: json['rewardedId'],
@@ -44,4 +50,17 @@ class AppAdIds {
       nativeId: json['nativeId'],
     );
   }
+
+  /// Helpful for debugging
+  @override
+  String toString() {
+    return 'AppAdIds(adNetwork: ${adNetwork.name}, appId: $appId)';
+  }
+
+  /// Utility getters (optional)
+  bool get hasInterstitial => interstitialId?.isNotEmpty == true;
+  bool get hasRewarded => rewardedId?.isNotEmpty == true;
+  bool get hasBanner => bannerId?.isNotEmpty == true;
+  bool get hasAppOpen => appOpenId?.isNotEmpty == true;
+  bool get hasNative => nativeId?.isNotEmpty == true;
 }

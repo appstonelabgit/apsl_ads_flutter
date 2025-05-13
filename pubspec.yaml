@@ -6,18 +6,18 @@ homepage: https://github.com/appstonelabgit/apsl_ads_flutter
 repository: https://github.com/appstonelabgit/apsl_ads_flutter
 
 environment:
-  sdk: '>=3.0.5 <4.0.0'
+  sdk: ">=3.0.5 <4.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
   collection: ^1.19.1
+  collection: ^1.19.1
   easy_audience_network: ^0.0.7
   flutter:
     sdk: flutter
-  google_mobile_ads: ^5.2.0
-  logger: ^2.4.0
-  unity_ads_plugin: ^0.3.21
-  shared_preferences: ^2.5.3
+  google_mobile_ads: ^6.0.0
+  logger: ^2.5.0
+  unity_ads_plugin: ^0.3.24
 
 dev_dependencies:
   flutter_lints: ^5.0.0

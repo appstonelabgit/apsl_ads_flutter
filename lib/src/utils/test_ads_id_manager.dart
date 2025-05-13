@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'ads_id_manager.dart';
+import 'package:apsl_ads_flutter/apsl_ads_flutter.dart';
 
 bool forceStopToLoadAds = false;
 
@@ -10,7 +10,7 @@ class TestAdsIdManager extends AdsIdManager {
   @override
   List<AppAdIds> get appAdIds => [
         AppAdIds(
-          adNetwork: 'admob',
+          adNetwork: AdNetwork.admob,
           appId: Platform.isAndroid
               ? 'ca-app-pub-3940256099942544~3347511713'
               : 'ca-app-pub-3940256099942544~1458002511',
@@ -31,7 +31,7 @@ class TestAdsIdManager extends AdsIdManager {
               : 'ca-app-pub-3940256099942544/3986624511',
         ),
         AppAdIds(
-          adNetwork: 'unity',
+          adNetwork: AdNetwork.unity,
           appId: Platform.isAndroid ? '4374881' : '4374880',
           bannerId: Platform.isAndroid ? 'Banner_Android' : 'Banner_iOS',
           interstitialId:
@@ -39,7 +39,7 @@ class TestAdsIdManager extends AdsIdManager {
           rewardedId: Platform.isAndroid ? 'Rewarded_Android' : 'Rewarded_iOS',
         ),
         const AppAdIds(
-          adNetwork: 'facebook',
+          adNetwork: AdNetwork.facebook,
           appId: '1579706379118402',
           interstitialId: 'VID_HD_16_9_15S_LINK#YOUR_PLACEMENT_ID',
           bannerId: 'IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID',

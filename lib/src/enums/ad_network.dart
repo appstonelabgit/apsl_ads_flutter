@@ -1,18 +1,18 @@
-import 'package:flutter/foundation.dart';
-
+/// Supported ad networks.
 enum AdNetwork { any, admob, unity, facebook }
 
+/// Extension to get string representation.
 extension AdNetworkExtension on AdNetwork {
-  String get value => describeEnum(this);
+  String get value => name;
 }
 
-AdNetwork? getAdNetworkFromString(String providerName) {
-  final placementName = providerName.toLowerCase();
+/// Converts a string to [AdNetwork] enum.
+/// Returns [AdNetwork.any] if no match is found.
+AdNetwork getAdNetworkFromString(String providerName) {
+  final normalized = providerName.toLowerCase();
 
-  final AdNetwork provider = AdNetwork.values.firstWhere(
-    (element) => element.name.toLowerCase() == placementName.toLowerCase(),
+  return AdNetwork.values.firstWhere(
+    (e) => e.name.toLowerCase() == normalized,
     orElse: () => AdNetwork.any,
   );
-
-  return provider;
 }

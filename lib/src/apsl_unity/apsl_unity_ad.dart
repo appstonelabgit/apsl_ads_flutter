@@ -5,15 +5,17 @@ import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 class ApslUnityAd extends ApslAdBase {
   final AdUnitType _adUnitType;
+  final bool _preLoadRewardedAds;
+
   bool _isAdLoaded = false;
-  bool _preLoadRewardedAds = false;
+  bool _isLoading = false;
 
   ApslUnityAd({
     required String adUnitId,
     required AdUnitType adUnitType,
     bool? preLoadRewardedAds,
-  })  : _preLoadRewardedAds = preLoadRewardedAds ?? false,
-        _adUnitType = adUnitType,
+  })  : _adUnitType = adUnitType,
+        _preLoadRewardedAds = preLoadRewardedAds ?? false,
         super(adUnitId);
 
   @override
@@ -28,11 +30,14 @@ class ApslUnityAd extends ApslAdBase {
   @override
   void dispose() {
     _isAdLoaded = false;
+    _isLoading = false;
   }
 
   @override
   Future<void> load() async {
-    if (_isAdLoaded) return;
+    if (_isAdLoaded || _isLoading) return;
+
+    _isLoading = true;
 
     UnityAds.load(
       placementId: adUnitId,
@@ -42,7 +47,14 @@ class ApslUnityAd extends ApslAdBase {
   }
 
   @override
-  show() async {
+  Future<void> show() async {
+    if (!_isAdLoaded) {
+      onAdFailedToShow?.call(adNetwork, adUnitType, null,
+          errorMessage: 'Unity Ad not loaded yet');
+      load(); // Attempt to load for future
+      return;
+    }
+
     await UnityAds.showVideoAd(
       placementId: adUnitId,
       onStart: onStartUnityAd,
@@ -55,44 +67,57 @@ class ApslUnityAd extends ApslAdBase {
     _isAdLoaded = false;
   }
 
-  void onCompleteLoadUnityAd(String s) {
+  void onCompleteLoadUnityAd(String placementId) {
     _isAdLoaded = true;
-    onAdLoaded?.call(adNetwork, adUnitType, null);
+    _isLoading = false;
+    onAdLoaded?.call(adNetwork, adUnitType, placementId);
   }
 
   void onFailedToLoadUnityAd(
       String placementId, UnityAdsLoadError error, String errorMessage) {
     _isAdLoaded = false;
+    _isLoading = false;
+
     onAdFailedToLoad?.call(
       adNetwork,
       adUnitType,
       error,
-      errorMessage: 'Error occurred while loading unity ad',
+      errorMessage: 'UnityAd load failed [$error]: $errorMessage',
     );
+
+    // Retry after short delay
+    Future.delayed(const Duration(seconds: 5), () {
+      if (!_isAdLoaded) load();
+    });
   }
 
-  void onStartUnityAd(String s) {
+  void onStartUnityAd(String placementId) {
+    onAdShowed?.call(adNetwork, adUnitType, placementId);
+  }
+
+  void onClickUnityAd(String placementId) {
+    onAdClicked?.call(adNetwork, adUnitType, placementId);
+  }
+
+  void onSkipUnityAd(String placementId) {
+    onAdDismissed?.call(adNetwork, adUnitType, placementId);
     _isAdLoaded = false;
-    onAdShowed?.call(adNetwork, adUnitType, null);
+
+    if (_adUnitType == AdUnitType.interstitial ||
+        (_adUnitType == AdUnitType.rewarded && _preLoadRewardedAds)) {
+      load(); // Preload again
+    }
   }
 
-  void onClickUnityAd(String s) {
-    onAdClicked?.call(adNetwork, adUnitType, null);
-  }
-
-  void onSkipUnityAd(String s) {
-    onAdDismissed?.call(adNetwork, adUnitType, null);
-  }
-
-  void onCompleteUnityAd(String s) {
+  void onCompleteUnityAd(String placementId) {
     _isAdLoaded = false;
-    if (adUnitType == AdUnitType.rewarded) {
+
+    if (_adUnitType == AdUnitType.rewarded) {
       onEarnedReward?.call(adNetwork, adUnitType, null, rewardAmount: null);
     } else {
-      onAdDismissed?.call(adNetwork, adUnitType, null);
+      onAdDismissed?.call(adNetwork, adUnitType, placementId);
     }
 
-    //dv removed preloading of rewarded ad
     if (_adUnitType == AdUnitType.interstitial ||
         (_adUnitType == AdUnitType.rewarded && _preLoadRewardedAds)) {
       load();
@@ -106,7 +131,7 @@ class ApslUnityAd extends ApslAdBase {
       adNetwork,
       adUnitType,
       error,
-      errorMessage: 'Error occurred while loading unity ad',
+      errorMessage: 'UnityAd show failed [$error]: $errorMessage',
     );
   }
 }

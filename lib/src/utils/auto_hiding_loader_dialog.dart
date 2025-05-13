@@ -14,7 +14,12 @@ Future showAutoHideLoaderDialog(BuildContext context, {int delay = 2}) {
     ),
   );
 
-  Future.delayed(Duration(seconds: delay), () => Navigator.of(context).pop());
+  final navigator = Navigator.of(context);
+  Future.delayed(Duration(seconds: delay), () {
+    if (navigator.mounted) {
+      navigator.pop();
+    }
+  });
   return showDialog(
     barrierDismissible: false,
     context: context,
@@ -32,8 +37,8 @@ void showLoaderDialog(BuildContext context) {
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
-      return WillPopScope(
-        onWillPop: () async => false, // Prevent back button closing dialog
+      return PopScope(
+        canPop: false, // Prevent back button closing dialog
         child: AlertDialog(
           key: _loaderKey,
           content: const Column(

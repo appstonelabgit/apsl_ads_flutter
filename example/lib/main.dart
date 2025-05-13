@@ -6,7 +6,6 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 const AdsIdManager adIdManager = TestAdsIdManager();
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ApslAds.instance.initialize(
@@ -192,17 +191,21 @@ class _HomeScreenState extends State<HomeScreen> {
       if (event.adUnitType == AdUnitType.rewarded) {
         if (event.type == AdEventType.adDismissed) {
         } else if (event.type == AdEventType.adFailedToShow) {
-          _showCustomDialog(
-            context,
-            title: "Ads not available",
-            description: "Please try again later.",
-          );
+          if (mounted) {
+            _showCustomDialog(
+              context,
+              title: "Ads not available",
+              description: "Please try again later.",
+            );
+          }
         } else if (event.type == AdEventType.earnedReward) {
-          _showCustomDialog(
-            context,
-            title: "Congratulations",
-            description: "You earned rewards",
-          );
+          if (mounted) {
+            _showCustomDialog(
+              context,
+              title: "Congratulations",
+              description: "You earned rewards",
+            );
+          }
         }
       }
     });

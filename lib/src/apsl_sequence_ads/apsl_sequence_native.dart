@@ -77,7 +77,7 @@ class _ApslSequenceNativeAdState extends State<ApslSequenceNativeAd> {
     final adIdManager = ApslAds.instance.adIdManager;
     return adIdManager.appAdIds.any(
       (adIds) =>
-          adIds.adNetwork == adNetwork.name &&
+          adIds.adNetwork == adNetwork &&
           adIds.nativeId != null &&
           adIds.nativeId!.isNotEmpty,
     );

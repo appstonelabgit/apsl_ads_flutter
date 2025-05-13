@@ -59,7 +59,7 @@ class ApslAds {
 
   /// [_isMobileAdNetworkInitialized] is used to check if admob is initialized or not
   bool _isMobileAdNetworkInitialized = false;
-  bool _hideAppOpenAdWhileAppInstall = false;
+  bool _blockAppOpenAd = false;
 
   StreamSubscription? _streamSubscription;
 
@@ -81,12 +81,12 @@ class ApslAds {
     bool showAdBadge = false,
     int showNavigationAdAfterCount = 1,
     bool preloadRewardedAds = false,
-    bool hideAppOpenAdWhileAppInstall = false,
+    bool blockAppOpenAd = false,
   }) async {
     _showAdBadge = showAdBadge;
     _showNavigationAdAfterCount = showNavigationAdAfterCount;
     _preLoadRewardedAds = preloadRewardedAds;
-    _hideAppOpenAdWhileAppInstall = hideAppOpenAdWhileAppInstall;
+    _blockAppOpenAd = blockAppOpenAd;
     if (enableLogger) _logger.enable(enableLogger);
     adIdManager = manager;
     if (adMobAdRequest != null) {
@@ -103,7 +103,7 @@ class ApslAds {
 
     for (var appAdId in manager.appAdIds) {
       if (appAdId.appId.isNotEmpty) {
-        final adNetworkName = getAdNetworkFromString(appAdId.adNetwork);
+        final adNetworkName = getAdNetworkFromString(appAdId.adNetwork.name);
         switch (adNetworkName) {
           case AdNetwork.admob:
 
@@ -153,8 +153,6 @@ class ApslAds {
             break;
 
           case AdNetwork.any:
-            break;
-          default:
             break;
         }
       }
@@ -291,14 +289,15 @@ class ApslAds {
       }
     }
 
-    if (appOpenAdUnitId != null &&
+    if (!forceStopToLoadAds &&
+        appOpenAdUnitId != null &&
         _appOpenAds.doesNotContain(
           AdNetwork.admob,
           AdUnitType.appOpen,
           appOpenAdUnitId,
         )) {
-      if (forceStopToLoadAds) return;
-      final appOpenAdManager = ApslAdmobAppOpenAd(appOpenAdUnitId, _adRequest , _hideAppOpenAdWhileAppInstall);
+      final appOpenAdManager =
+          ApslAdmobAppOpenAd(appOpenAdUnitId, _adRequest, _blockAppOpenAd);
 
       if (_appOpenAds.isEmpty) {
         await appOpenAdManager.load();
