@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.0
+
+- Migrated to null safety
+- Updated dependencies to their latest versions
+- Improved error handling and documentation
+- Added comprehensive test suite
+- Added CONTRIBUTING.md
+
 ## 1.2.15
 
 Improved performance with library updates
